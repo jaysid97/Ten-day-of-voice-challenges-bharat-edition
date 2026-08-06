@@ -1,0 +1,15 @@
+{
+  "name": "voice-agent-bharat-edition",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Day 1 voice agent starter for the VoiceForBharat challenge",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.1",
+    "express": "^4.21.2"
+  }
+}

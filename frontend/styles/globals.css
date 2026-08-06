@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@source "../node_modules/streamdown/dist/index.js";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.99 0.005 240);
+  --foreground: oklch(0.14 0.04 240);
+  --card: oklch(0.98 0.01 240);
+  --card-foreground: oklch(0.14 0.04 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.14 0.04 240);
+  --primary: oklch(0.65 0.22 42); /* Cyber Saffron */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.95 0.02 200);
+  --secondary-foreground: oklch(0.2 0.05 240);
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.48 0.03 240);
+  --accent: oklch(0.7 0.2 195); /* Electric Cyan */
+  --accent-foreground: oklch(0.1 0.04 240);
+  --destructive: oklch(0.58 0.24 27);
+  --border: oklch(0.9 0.02 240);
+  --input: oklch(0.9 0.02 240);
+  --ring: oklch(0.65 0.22 42);
+  --chart-1: oklch(0.65 0.22 42);
+  --chart-2: oklch(0.7 0.2 195);
+  --chart-3: oklch(0.75 0.18 85);
+  --chart-4: oklch(0.65 0.2 150);
+  --chart-5: oklch(0.6 0.22 300);
+  --sidebar: oklch(0.98 0 0);
+  --sidebar-foreground: oklch(0.14 0.04 240);
+  --sidebar-primary: oklch(0.65 0.22 42);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.95 0.02 200);
+  --sidebar-accent-foreground: oklch(0.2 0.05 240);
+  --sidebar-border: oklch(0.9 0.02 240);
+  --sidebar-ring: oklch(0.65 0.22 42);
+}
+
+.dark {
+  --background: oklch(0.11 0.03 255); /* Deep Cyber Space Indigo */
+  --foreground: oklch(0.98 0.01 240);
+  --card: oklch(0.15 0.04 255);
+  --card-foreground: oklch(0.98 0.01 240);
+  --popover: oklch(0.14 0.04 255);
+  --popover-foreground: oklch(0.98 0.01 240);
+  --primary: oklch(0.7 0.22 42); /* Neon Saffron */
+  --primary-foreground: oklch(0.1 0.04 255);
+  --secondary: oklch(0.2 0.05 255);
+  --secondary-foreground: oklch(0.98 0.01 240);
+  --muted: oklch(0.18 0.04 255);
+  --muted-foreground: oklch(0.7 0.03 240);
+  --accent: oklch(0.75 0.2 195); /* Electric Cyan Glow */
+  --accent-foreground: oklch(0.98 0.01 240);
+  --destructive: oklch(0.65 0.22 22);
+  --border: oklch(0.25 0.05 255 / 40%);
+  --input: oklch(0.25 0.05 255 / 50%);
+  --ring: oklch(0.7 0.22 42);
+  --chart-1: oklch(0.7 0.22 42);
+  --chart-2: oklch(0.75 0.2 195);
+  --chart-3: oklch(0.8 0.2 85);
+  --chart-4: oklch(0.68 0.2 150);
+  --chart-5: oklch(0.65 0.22 300);
+  --sidebar: oklch(0.15 0.04 255);
+  --sidebar-foreground: oklch(0.98 0.01 240);
+  --sidebar-primary: oklch(0.7 0.22 42);
+  --sidebar-primary-foreground: oklch(0.98 0.01 240);
+  --sidebar-accent: oklch(0.2 0.05 255);
+  --sidebar-accent-foreground: oklch(0.98 0.01 240);
+  --sidebar-border: oklch(0.25 0.05 255 / 40%);
+  --sidebar-ring: oklch(0.7 0.22 42);
+}
+
+@theme inline {
+  --font-sans:
+    var(--font-public-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono:
+    var(--font-commit-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-foreground/20 outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground relative min-h-screen selection:bg-amber-500/30 selection:text-amber-200;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(0, 229, 255, 0.12) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+  }
+}
+
+/* Custom Cyber-Bharat Aesthetics */
+@keyframes chakraRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 15px rgba(255, 153, 51, 0.6)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 25px rgba(0, 229, 255, 0.9)); }
+}
+
+.chakra-icon {
+  animation: chakraRotate 24s linear infinite;
+}
+
+.cyber-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.glass-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.saffron-gradient-text {
+  background: linear-gradient(135deg, #FF9933 0%, #F59E0B 50%, #00E5FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
