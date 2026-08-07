@@ -33,9 +33,9 @@ export interface AppConfig {
 }
 
 export const APP_CONFIG_DEFAULTS: AppConfig = {
-  companyName: 'IndicVox AI',
-  pageTitle: 'IndicVox AI — Bharat Voice AI Edition',
-  pageDescription: 'Next-Gen Voice Intelligence for Bharat — Powered by Gemini 3.5 & Murf Falcon TTS',
+  companyName: 'Bharat EdTech',
+  pageTitle: 'Shiksha AI — Cyber-Bharat Learning & Literacy Companion',
+  pageDescription: 'Empowering Indian Students with Ultra-Fast Voice AI & Guardrailed Learning — Powered by Murf Falcon TTS & Gemini',
 
   supportsChatInput: true,
   supportsVideoInput: true,
@@ -45,17 +45,17 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   logo: '/murf-logo.svg',
   accent: '#FF9933',
   logoDark: '/murf-logo-dark.svg',
-  accentDark: '#00E5FF',
-  startButtonText: 'Start IndicVox AI',
+  accentDark: '#38BDF8',
+  startButtonText: 'Start Voice Session with Shiksha AI',
 
-  // Audio visualization setup: Glowing Aura with Cyber Saffron/Cyan
+  // Audio visualization setup: Glowing Aura with Saffron & Cyan Cyber Gradients
   audioVisualizerType: 'aura',
   audioVisualizerColor: '#FF9933',
-  audioVisualizerColorDark: '#00E5FF',
+  audioVisualizerColorDark: '#38BDF8',
   audioVisualizerColorShift: 0.4,
 
   // agent dispatch configuration
-  agentName: process.env.AGENT_NAME ?? 'IndicVox',
+  agentName: process.env.AGENT_NAME ?? 'ShikshaAI',
 
   // LiveKit Cloud Sandbox configuration
   sandboxId: undefined,

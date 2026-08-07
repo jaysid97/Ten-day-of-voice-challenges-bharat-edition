@@ -21,30 +21,43 @@ logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
-# IndicVox AI — Cyber-Bharat Learning & Literacy Persona
-SYSTEM_PROMPT = """You are IndicVox AI, a patient, encouraging, and highly intelligent AI Learning & Literacy Tutor built for Bharat (India). You help users practice English conversation, learn new skills, answer educational queries, and build learning confidence with deep appreciation for Indian context. Be concise, warm, encouraging, and natural in tone. Keep your responses short, conversational, and direct, avoiding complex formatting, markdown bullet points, symbols, or emojis so they sound crisp and human when spoken aloud."""
+# Day 2: Shiksha AI — Cyber-Bharat Learning & Literacy Persona with Guardrails
+SYSTEM_PROMPT = """IDENTITY:
+You are Shiksha AI, an empathetic, patient, and highly intelligent AI Learning & Literacy Tutor built for Bharat by Bharat EdTech. You help users practice spoken English, understand school subjects, answer educational queries, and build learning confidence.
+
+OBJECTIVES:
+1. Explain educational and literacy concepts using simple, relatable Indian everyday examples.
+2. Provide positive, encouraging spoken practice for learners speaking in English, Hindi, or Hinglish.
+3. Build confidence by giving supportive feedback and step-by-step guidance.
+
+KNOWLEDGE:
+You know NCERT/CBSE level school topics, basic math, science, English grammar, and general literacy.
+You do NOT know personal user data, live market prices, or official medical/legal diagnoses.
+
+LANGUAGE:
+- Seamlessly mirror the user's register and language mix (English, Hindi, or Hinglish like "samajh gaya", "dekhiye", "bilkul").
+- Maintain a warm, encouraging Indian tone with polite markers like "Ji", "Dost", "Aap", "Bahut accha".
+- Fluidly adapt whenever the user switches between English and regional Hindi phrasing.
+
+GUARDRAILS:
+1. HARD REFUSALS:
+   - NEVER shame, mock, or judge a wrong answer. Always validate effort first.
+   - NEVER diagnose or claim a learner has a learning disability, ADHD, dyslexia, or any medical condition.
+   - NEVER solve full exam papers, write entire homework essays, or give direct answer keys without teaching the underlying concept.
+   - NEVER state unverified market prices, financial promises, or legal rulings as current fact.
+2. ESCALATION SCRIPT:
+   If asked for a medical diagnosis, developmental assessment, or legal/financial guarantee, state:
+   "Main doctor ya psychological expert nahi hoon. Learning disorder ya health guidance ke liye, kripya kisi certified doctor ya expert se consult karein."
+
+STYLE:
+- Speak naturally for voice synthesis (Murf Falcon).
+- Maximum 1 to 2 short sentences per response (under 20 words per sentence).
+- NO bullet points, NO asterisks, NO brackets, NO emojis, NO markdown symbols. Tone must sound human and crisp when spoken aloud."""
 
 
 class Assistant(Agent):
     def __init__(self) -> None:
         super().__init__(instructions=SYSTEM_PROMPT)
-
-    # To add tools, use the @function_tool decorator.
-    # Here's an example that adds a simple weather tool.
-    # You also have to add `from livekit.agents import function_tool, RunContext` to the top of this file
-    # @function_tool
-    # async def lookup_weather(self, context: RunContext, location: str):
-    #     """Use this tool to look up current weather information in the given location.
-    #
-    #     If the location is not supported by the weather service, the tool will indicate this. You must tell the user the location's weather is unavailable.
-    #
-    #     Args:
-    #         location: The location to look up weather information for (e.g. city name)
-    #     """
-    #
-    #     logger.info(f"Looking up weather for {location}")
-    #
-    #     return "sunny with a temperature of 70 degrees."
 
 
 server = AgentServer()
@@ -60,56 +73,28 @@ server.setup_fnc = prewarm
 @server.rtc_session(agent_name=os.getenv("AGENT_NAME", "my-agent"))
 async def my_agent(ctx: JobContext):
     # Logging setup
-    # Add any other context you want in all log entries here
     ctx.log_context_fields = {
         "room": ctx.room.name,
     }
 
-    # Set up a voice AI pipeline using Murf Falcon, Gemini, Deepgram, and the LiveKit turn detector
+    # Set up a voice AI pipeline using Murf Falcon, Gemini, Deepgram, and LiveKit turn detector
     session = AgentSession(
-        # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
-        # See all available models at https://docs.livekit.io/agents/models/stt/
         stt=deepgram.STT(model="nova-3"),
-        # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
-        # See all available models at https://docs.livekit.io/agents/models/llm/
         llm=google.LLM(
-                model="gemini-3.5-flash-lite",
-            ),
-        # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
-        # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
+            model="gemini-3.5-flash-lite",
+        ),
         tts=murf.TTS(
-                voice="Anisha", 
-                locale="en-IN",
-                style="Conversation",
-                tokenizer=tokenize.basic.SentenceTokenizer(min_sentence_len=2),
-                text_pacing=True
-            ),
-        # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
-        # See more at https://docs.livekit.io/agents/build/turns
+            voice="Anisha",
+            locale="en-IN",
+            style="Conversation",
+            tokenizer=tokenize.basic.SentenceTokenizer(min_sentence_len=2),
+            text_pacing=True,
+        ),
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
-        # allow the LLM to generate a response while waiting for the end of turn
-        # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
         preemptive_generation=True,
+        user_away_timeout=12.0,
     )
-
-    # To use a realtime model instead of a voice pipeline, use the following session setup instead.
-    # (Note: This is for the OpenAI Realtime API. For other providers, see https://docs.livekit.io/agents/models/realtime/))
-    # 1. Install livekit-agents[openai]
-    # 2. Set OPENAI_API_KEY in .env.local
-    # 3. Add `from livekit.plugins import openai` to the top of this file
-    # 4. Use the following session setup instead of the version above
-    # session = AgentSession(
-    #     llm=openai.realtime.RealtimeModel(voice="marin")
-    # )
-
-    # # Add a virtual avatar to the session, if desired
-    # # For other providers, see https://docs.livekit.io/agents/models/avatar/
-    # avatar = hedra.AvatarSession(
-    #   avatar_id="...",  # See https://docs.livekit.io/agents/models/avatar/plugins/hedra
-    # )
-    # # Start the avatar and wait for it to join
-    # await avatar.start(session, room=ctx.room)
 
     # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
@@ -129,6 +114,11 @@ async def my_agent(ctx: JobContext):
 
     # Join the room and connect to the user
     await ctx.connect()
+
+    # Day 2 First-turn Greeting
+    await session.say(
+        "Namaste! Main Shiksha AI hoon, aapka personal learning companion. Aaj hum kaunsa topic study karein ya practice karein?"
+    )
 
 
 if __name__ == "__main__":
