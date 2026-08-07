@@ -1,30 +1,53 @@
-# Voice Agent for Bharat Edition
+# 🎙️ #VoiceForBharat — 10 Days of Voice AI Challenge (Bharat Edition)
 
-This workspace contains a simple Day 1 voice agent starter.
+Welcome to the **10 Days of Voice Challenge (#VoiceForBharat)** repository built with **Murf Falcon TTS**, **LiveKit Agents**, **Gemini LLM**, and **Deepgram STT**.
 
-## What it does
-- Serves a small web app that listens to your microphone.
-- Turns your speech into a simple reply.
-- Uses browser speech synthesis by default.
-- Can be wired to Murf Falcon TTS when a Murf API key is provided.
+---
 
-## Setup
-1. Install dependencies:
-   ```bash
-   npm install
+## 📂 Day-by-Day Challenge Tracker
+
+| Day | Focus / Theme | Agent Name | Git Branch | Local Directory |
+|---|---|---|---|---|
+| **Day 1** | Voice Setup & LiveKit Engine | **IndicVox AI** | [`day-1`](https://github.com/jaysid97/Ten-day-of-voice-challenges-bharat-edition/tree/day-1) | [`days/day1/`](file:///d:/ten%20day%20voice%20agent%20bharat%20edition/days/day1/) |
+| **Day 2** | Persona, Objectives & Guardrails | **Shiksha AI** | [`day-2`](https://github.com/jaysid97/Ten-day-of-voice-challenges-bharat-edition/tree/day-2) | [`days/day2/`](file:///d:/ten%20day%20voice%20agent%20bharat%20edition/days/day2/) |
+| **Day 3+** | *Upcoming Days...* | *TBD* | `main` | `days/` |
+
+---
+
+## 🔀 How to Switch Between Days
+
+### 1. Using Git Branches:
+- **Switch to Day 1**:
+  ```bash
+  git checkout day-1
+  ```
+- **Switch to Day 2**:
+  ```bash
+  git checkout day-2
+  ```
+- **Return to Latest (`main`)**:
+  ```bash
+  git checkout main
+  ```
+
+### 2. Browsing Folders Directly (`main` branch):
+- **Day 1 Code & Guide**: [`days/day1/`](file:///d:/ten%20day%20voice%20agent%20bharat%20edition/days/day1/)
+- **Day 2 Code, Evals & Guide**: [`days/day2/`](file:///d:/ten%20day%20voice%20agent%20bharat%20edition/days/day2/)
+
+---
+
+## ⚡ Quick Start
+
+1. **Launch Full App (Backend + Frontend)**:
+   ```powershell
+   .\start_app.ps1
    ```
-2. Copy the environment example:
-   ```bash
-   cp .env.example .env
-   ```
-3. Add your Murf API key and preferred voice ID to `.env`.
-4. Start the app:
-   ```bash
-   npm start
-   ```
-5. Open http://localhost:3000.
+2. **Open Web UI**: `http://localhost:3000`
 
-## Day 1 notes
-- Pick a track and keep the same one for all 10 days.
-- Use an Indian voice in your prompts and recordings.
-- Record a short video and post it to LinkedIn with the required hashtags.
+---
+
+## 🛡️ Day 2 Highlight: Shiksha AI (शिक्षा AI)
+- **Persona**: Empathetic AI Voice Learning & Literacy Companion for Bharat.
+- **Voice**: Murf Falcon TTS (`Anisha`, `en-IN`, Conversation Style).
+- **Hinglish Support**: Fluid code-mixed voice register mirroring (*"Ji"*, *"Dost"*, *"Aap"*).
+- **Guardrails**: Hard refusals on medical/ADHD diagnosis, exam cheating, and zero shaming of wrong answers.
