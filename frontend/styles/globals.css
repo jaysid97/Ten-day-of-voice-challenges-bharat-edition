@@ -24,29 +24,16 @@
   --border: oklch(0.9 0.02 240);
   --input: oklch(0.9 0.02 240);
   --ring: oklch(0.65 0.22 42);
-  --chart-1: oklch(0.65 0.22 42);
-  --chart-2: oklch(0.7 0.2 195);
-  --chart-3: oklch(0.75 0.18 85);
-  --chart-4: oklch(0.65 0.2 150);
-  --chart-5: oklch(0.6 0.22 300);
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.14 0.04 240);
-  --sidebar-primary: oklch(0.65 0.22 42);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.95 0.02 200);
-  --sidebar-accent-foreground: oklch(0.2 0.05 240);
-  --sidebar-border: oklch(0.9 0.02 240);
-  --sidebar-ring: oklch(0.65 0.22 42);
 }
 
 .dark {
-  --background: oklch(0.11 0.03 255); /* Deep Cyber Space Indigo */
+  --background: oklch(0.1 0.03 255); /* Smart Classroom Deep Slate */
   --foreground: oklch(0.98 0.01 240);
-  --card: oklch(0.15 0.04 255);
+  --card: oklch(0.14 0.04 255);
   --card-foreground: oklch(0.98 0.01 240);
   --popover: oklch(0.14 0.04 255);
   --popover-foreground: oklch(0.98 0.01 240);
-  --primary: oklch(0.7 0.22 42); /* Neon Saffron */
+  --primary: oklch(0.7 0.22 42); /* Warm Saffron */
   --primary-foreground: oklch(0.1 0.04 255);
   --secondary: oklch(0.2 0.05 255);
   --secondary-foreground: oklch(0.98 0.01 240);
@@ -54,23 +41,9 @@
   --muted-foreground: oklch(0.7 0.03 240);
   --accent: oklch(0.75 0.2 195); /* Electric Cyan Glow */
   --accent-foreground: oklch(0.98 0.01 240);
-  --destructive: oklch(0.65 0.22 22);
   --border: oklch(0.25 0.05 255 / 40%);
   --input: oklch(0.25 0.05 255 / 50%);
   --ring: oklch(0.7 0.22 42);
-  --chart-1: oklch(0.7 0.22 42);
-  --chart-2: oklch(0.75 0.2 195);
-  --chart-3: oklch(0.8 0.2 85);
-  --chart-4: oklch(0.68 0.2 150);
-  --chart-5: oklch(0.65 0.22 300);
-  --sidebar: oklch(0.15 0.04 255);
-  --sidebar-foreground: oklch(0.98 0.01 240);
-  --sidebar-primary: oklch(0.7 0.22 42);
-  --sidebar-primary-foreground: oklch(0.98 0.01 240);
-  --sidebar-accent: oklch(0.2 0.05 255);
-  --sidebar-accent-foreground: oklch(0.98 0.01 240);
-  --sidebar-border: oklch(0.25 0.05 255 / 40%);
-  --sidebar-ring: oklch(0.7 0.22 42);
 }
 
 @theme inline {
@@ -106,13 +79,35 @@
     @apply border-foreground/20 outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground relative min-h-screen selection:bg-amber-500/30 selection:text-amber-200;
+    @apply bg-background text-foreground relative min-h-screen selection:bg-amber-500/30 selection:text-amber-200 overflow-x-hidden;
+    /* Beautiful Smart Classroom & Laboratory Ambient Background */
     background-image: 
-      radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.12) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(0, 229, 255, 0.12) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+      radial-gradient(at 10% 15%, rgba(255, 153, 51, 0.18) 0px, transparent 55%),
+      radial-gradient(at 90% 10%, rgba(56, 189, 248, 0.18) 0px, transparent 55%),
+      radial-gradient(at 50% 85%, rgba(16, 185, 129, 0.12) 0px, transparent 60%),
+      linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(8, 14, 26, 0.98));
   }
 }
+
+/* Custom Smart Classroom Background Overlay */
+.school-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Floating Academic Symbols Animation */
+@keyframes floatSymbol {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+  50% { transform: translateY(-18px) rotate(5deg); opacity: 0.5; }
+  100% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+}
+
+.float-symbol-1 { animation: floatSymbol 8s ease-in-out infinite; }
+.float-symbol-2 { animation: floatSymbol 10s ease-in-out infinite 2s; }
+.float-symbol-3 { animation: floatSymbol 9s ease-in-out infinite 4s; }
+.float-symbol-4 { animation: floatSymbol 11s ease-in-out infinite 1s; }
 
 /* Custom Cyber-Bharat Aesthetics */
 @keyframes chakraRotate {
@@ -134,15 +129,15 @@
 }
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
 }
 
 .saffron-gradient-text {
-  background: linear-gradient(135deg, #FF9933 0%, #F59E0B 50%, #00E5FF 100%);
+  background: linear-gradient(135deg, #FF9933 0%, #F59E0B 50%, #38BDF8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

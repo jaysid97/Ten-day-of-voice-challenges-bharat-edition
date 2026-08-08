@@ -100,7 +100,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                   <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
                 </span>
-                <span>GUARDRAILED VOICE AI • DAY 2</span>
+                <span>PERSONALISED FRONTEND • DAY 3</span>
               </div>
 
               <span className="hidden font-mono text-xs font-semibold text-slate-400 md:inline-block">

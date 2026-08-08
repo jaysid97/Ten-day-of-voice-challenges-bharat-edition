@@ -1,75 +1,24 @@
 'use client';
 
 import { useState } from 'react';
+import { HumanAITutor } from '@/components/app/human-ai-tutor';
 import { Button } from '@/components/ui/button';
-
-function ShikshaEmblem() {
-  return (
-    <div className="relative mb-6 flex items-center justify-center">
-      {/* Outer Glowing Cyber Aura */}
-      <div className="absolute size-48 animate-pulse rounded-full bg-gradient-to-tr from-amber-500/30 via-orange-500/20 to-sky-400/30 blur-3xl" />
-
-      {/* Rotating Cyber Chakra Ring */}
-      <div className="absolute size-40 rounded-full border border-amber-500/30 border-t-amber-400 border-r-sky-400 chakra-icon opacity-80" />
-
-      {/* Center Glass Badge */}
-      <div className="relative flex size-32 items-center justify-center rounded-3xl border border-white/20 bg-slate-900/80 shadow-2xl backdrop-blur-2xl transition-all duration-500 hover:scale-105 hover:border-amber-400/50 hover:shadow-amber-500/20">
-        <svg
-          viewBox="0 0 100 100"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="size-20 text-amber-400 cyber-glow"
-        >
-          {/* Outer Ring with Spoke Accents */}
-          <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 2" className="opacity-40" />
-          <circle cx="50" cy="50" r="38" stroke="url(#shiksha_grad)" strokeWidth="2.5" />
-          
-          {/* Book / Graduation Shield Icon */}
-          <path
-            d="M50 25L20 40L50 55L80 40L50 25Z"
-            fill="url(#shiksha_grad)"
-            fillOpacity="0.35"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M32 46V65C32 70 40 75 50 75C60 75 68 70 68 65V46"
-            stroke="#38BDF8"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <line x1="80" y1="40" x2="80" y2="60" stroke="#FF9933" strokeWidth="2.5" strokeLinecap="round" />
-          <circle cx="80" cy="62" r="2.5" fill="#FF9933" />
-
-          {/* Central Saffron Flame Spark */}
-          <path d="M50 32C50 32 46 38 46 41C46 43.2 47.8 45 50 45C52.2 45 54 43.2 54 41C54 38 50 32 50 32Z" fill="#FF9933" />
-
-          <defs>
-            <linearGradient id="shiksha_grad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#FF9933" />
-              <stop offset="0.5" stopColor="#F59E0B" />
-              <stop offset="1" stopColor="#38BDF8" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-    </div>
-  );
-}
 
 interface WelcomeViewProps {
   startButtonText: string;
   onStartCall: () => void;
+  hasEndedCall?: boolean;
 }
 
 export const WelcomeView = ({
   startButtonText,
   onStartCall,
+  hasEndedCall = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'script' | 'guardrails'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'states' | 'script' | 'guardrails'>('overview');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [lang, setLang] = useState<'en' | 'hi'>('en');
 
   const demoScript = [
     {
@@ -95,6 +44,44 @@ export const WelcomeView = ({
     },
   ];
 
+  const agentStatesList = [
+    {
+      state: 'State 1: Ready',
+      desc: 'Agent has not started yet; 1 clear start button',
+      icon: '🟢',
+      badge: 'READY (तैयार)',
+      color: 'border-emerald-500/40 bg-emerald-950/30 text-emerald-300',
+    },
+    {
+      state: 'State 2: Connecting',
+      desc: 'Agent is joining call; tells user to wait',
+      icon: '🟡',
+      badge: 'CONNECTING (जोड़ रहे हैं)',
+      color: 'border-sky-500/40 bg-sky-950/30 text-sky-300',
+    },
+    {
+      state: 'State 3: Listening',
+      desc: 'Agent is listening to the user speak',
+      icon: '🎤',
+      badge: 'LISTENING (आपकी बात सुन रहे हैं)',
+      color: 'border-emerald-400/50 bg-emerald-950/40 text-emerald-300',
+    },
+    {
+      state: 'State 4: Speaking',
+      desc: 'Agent is replying to user via Murf TTS',
+      icon: '🔊',
+      badge: 'SPEAKING (Shiksha AI बोल रही है)',
+      color: 'border-amber-500/40 bg-amber-950/40 text-amber-300',
+    },
+    {
+      state: 'State 5: Call ended',
+      desc: 'Conversation is over; option to start again',
+      icon: '🔴',
+      badge: 'CALL ENDED (समाप्त)',
+      color: 'border-rose-500/40 bg-rose-950/30 text-rose-300',
+    },
+  ];
+
   const copyToClipboard = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
@@ -104,28 +91,53 @@ export const WelcomeView = ({
   return (
     <div
       ref={ref}
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20 pb-16"
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-14 pb-16 school-grid-bg"
     >
       {/* Top Tricolor Cyber Gradient Line */}
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808] opacity-80" />
+      <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808] opacity-90" />
 
-      {/* Background Animated Ambient Lights */}
-      <div className="pointer-events-none absolute top-1/4 left-1/2 size-[600px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-amber-500/10 via-sky-500/10 to-emerald-500/10 blur-[120px]" />
+      {/* Ambient Smart Classroom Window Lighting */}
+      <div className="pointer-events-none absolute top-1/4 left-1/2 size-[650px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-amber-500/15 via-sky-500/15 to-emerald-500/15 blur-[130px]" />
 
       <section className="relative z-10 flex max-w-3xl flex-col items-center text-center">
-        {/* Top Tag Pill */}
-        <div className="mb-5 inline-flex items-center space-x-2.5 rounded-full border border-amber-500/40 bg-slate-900/80 px-4 py-1.5 text-xs font-semibold tracking-wider text-amber-300 shadow-lg shadow-amber-950/30 backdrop-blur-xl">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
-          </span>
-          <span>🇮🇳 BHARAT EDTECH • SHIKSHA AI (DAY 2)</span>
+        {/* Language & Track Header Bar */}
+        <div className="mb-4 flex items-center justify-between w-full max-w-xl px-2">
+          <div className="inline-flex items-center space-x-2 rounded-full border border-amber-500/40 bg-slate-900/90 px-4 py-1.5 text-xs font-extrabold text-amber-300 shadow-lg backdrop-blur-xl">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+            </span>
+            <span>🇮🇳 BHARAT EDTECH • HUMAN AI CLASSROOM</span>
+          </div>
+
+          <button
+            onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+            className="inline-flex items-center space-x-1.5 rounded-full border border-white/20 bg-slate-900/90 px-3.5 py-1.5 text-xs font-extrabold text-amber-300 shadow-md hover:bg-slate-800 transition-all active:scale-95"
+          >
+            <span>{lang === 'en' ? '🇮🇳 हिन्दी' : '🌐 English'}</span>
+          </button>
         </div>
 
-        <ShikshaEmblem />
+        {/* State 5 Banner if Call Ended */}
+        {hasEndedCall && (
+          <div className="mb-6 w-full animate-bounce rounded-2xl border border-rose-500/40 bg-rose-950/70 p-4 text-rose-200 backdrop-blur-md shadow-xl">
+            <div className="flex items-center justify-center space-x-2 font-mono text-sm font-extrabold text-rose-300">
+              <span className="size-3 rounded-full bg-rose-500 animate-ping" />
+              <span>🔴 {lang === 'hi' ? 'कॉन्वर्सेशन समाप्त (Call Ended)' : 'Call Ended'}</span>
+            </div>
+            <p className="mt-1 text-xs text-slate-300">
+              {lang === 'hi'
+                ? 'आपका वॉइस सेशन समाप्त हो गया है। नया लेसन शुरू करने के लिए नीचे बटन दबाएं।'
+                : 'Your voice session with Shiksha AI has concluded. Click below to start a new lesson.'}
+            </p>
+          </div>
+        )}
+
+        {/* Human AI Tutor Interactive Character Avatar */}
+        <HumanAITutor state={hasEndedCall ? 'ended' : 'ready'} size="lg" />
 
         {/* Hero Title */}
-        <h1 className="mb-3 text-4xl font-black tracking-tight sm:text-6xl md:text-7xl">
+        <h1 className="mb-2 text-4xl font-black tracking-tight sm:text-6xl md:text-7xl">
           <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-sky-400 bg-clip-text text-transparent drop-shadow-sm">
             Shiksha AI
           </span>
@@ -134,91 +146,130 @@ export const WelcomeView = ({
           </span>
         </h1>
 
+        {/* State 1: Ready Badge */}
+        <div className="mb-3 inline-flex items-center space-x-2 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-3.5 py-1 text-xs font-extrabold text-emerald-300 shadow-md">
+          <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>
+            {lang === 'hi'
+              ? '🟢 स्टेट 1: एजेंट तैयार है (Ready to Connect)'
+              : '🟢 State 1: Agent Ready'}
+          </span>
+        </div>
+
         <p className="mb-3 max-w-2xl text-lg font-medium leading-snug text-amber-200/90 sm:text-2xl">
-          Empathetic AI Voice Tutor with Built-in Guardrails for Bharat
+          {lang === 'hi'
+            ? 'भारत के लिए सहानुभूतिपूर्ण Human AI वॉइस ट्यूटर'
+            : 'Empathetic Human-Type AI Voice Tutor for Smart Classrooms'}
         </p>
 
         <p className="mb-6 max-w-xl text-sm font-normal leading-relaxed text-slate-300 sm:text-base">
-          Practice spoken English, break down NCERT concepts in fluid Hinglish, and test safety
-          refusals powered by LiveKit, Gemini &amp; Murf Falcon TTS.
+          {lang === 'hi'
+            ? 'बोलचाल की अंग्रेजी का अभ्यास करें, हिन्ग्लिश में अवधारणाओं को समझें और स्मार्ट क्लासरूम में सीखें।'
+            : 'Practice spoken English, break down NCERT concepts in fluid Hinglish, and experience smart classroom voice AI.'}
         </p>
 
         {/* Tab Navigation Controls */}
-        <div className="mb-6 flex items-center space-x-1.5 rounded-2xl border border-white/10 bg-slate-900/80 p-1.5 text-xs font-semibold backdrop-blur-md">
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-slate-900/80 p-1.5 text-xs font-semibold backdrop-blur-md">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`rounded-xl px-4 py-2 transition-all ${
+            className={`rounded-xl px-3.5 py-2 transition-all ${
               activeTab === 'overview'
                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            🌟 Agent Overview
+            🌟 Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('states')}
+            className={`rounded-xl px-3.5 py-2 transition-all ${
+              activeTab === 'states'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 font-bold text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            🎯 5 Agent States
           </button>
           <button
             onClick={() => setActiveTab('script')}
-            className={`rounded-xl px-4 py-2 transition-all ${
+            className={`rounded-xl px-3.5 py-2 transition-all ${
               activeTab === 'script'
                 ? 'bg-gradient-to-r from-sky-500 to-blue-500 font-bold text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            🎙️ Demo Recording Script
+            🎙️ Recording Script
           </button>
           <button
             onClick={() => setActiveTab('guardrails')}
-            className={`rounded-xl px-4 py-2 transition-all ${
+            className={`rounded-xl px-3.5 py-2 transition-all ${
               activeTab === 'guardrails'
                 ? 'bg-gradient-to-r from-rose-500 to-amber-500 font-bold text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            🛡️ Day 2 Guardrails
+            🛡️ Guardrails
           </button>
         </div>
 
         {/* TAB 1: OVERVIEW GRID */}
         {activeTab === 'overview' && (
           <div className="mb-6 grid w-full grid-cols-1 gap-3.5 text-left sm:grid-cols-3">
-            <div className="group rounded-2xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-md transition-all hover:border-amber-500/50 hover:bg-slate-900/90 hover:shadow-xl hover:shadow-amber-500/10">
+            <div className="group rounded-2xl border border-white/10 bg-slate-900/70 p-4 backdrop-blur-md transition-all hover:border-amber-500/50 hover:bg-slate-900/95 hover:shadow-xl hover:shadow-amber-500/10">
               <div className="mb-1.5 flex items-center space-x-2 text-xs font-bold text-amber-400">
-                <span className="text-base">🗣️</span>
-                <span>Code-Mixed Voice</span>
+                <span className="text-base">👤</span>
+                <span>Human AI Tutor</span>
               </div>
               <p className="text-xs leading-relaxed text-slate-300">
-                Seamless Hinglish &amp; Indian English register mirroring with polite Indian markers
-                (*"Ji"*, *"Dost"*).
+                Friendly character avatar with animated expressions, blinking eyes, and dynamic mouth equalizer.
               </p>
             </div>
 
-            <div className="group rounded-2xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-md transition-all hover:border-sky-400/50 hover:bg-slate-900/90 hover:shadow-xl hover:shadow-sky-400/10">
+            <div className="group rounded-2xl border border-white/10 bg-slate-900/70 p-4 backdrop-blur-md transition-all hover:border-sky-400/50 hover:bg-slate-900/95 hover:shadow-xl hover:shadow-sky-400/10">
               <div className="mb-1.5 flex items-center space-x-2 text-xs font-bold text-sky-400">
-                <span className="text-base">🛡️</span>
-                <span>Strict Guardrails</span>
+                <span className="text-base">🏫</span>
+                <span>Smart Classroom UI</span>
               </div>
               <p className="text-xs leading-relaxed text-slate-300">
-                Hard refusals on medical/ADHD diagnosis, exam cheating, and zero shaming of wrong
-                answers.
+                Attractive digital blackboard backdrop with floating academic symbols (books, math, symbols).
               </p>
             </div>
 
-            <div className="group rounded-2xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-md transition-all hover:border-emerald-400/50 hover:bg-slate-900/90 hover:shadow-xl hover:shadow-emerald-400/10">
+            <div className="group rounded-2xl border border-white/10 bg-slate-900/70 p-4 backdrop-blur-md transition-all hover:border-emerald-400/50 hover:bg-slate-900/95 hover:shadow-xl hover:shadow-emerald-400/10">
               <div className="mb-1.5 flex items-center space-x-2 text-xs font-bold text-emerald-400">
                 <span className="text-base">⚡</span>
-                <span>Murf Falcon Engine</span>
+                <span>Murf Falcon TTS</span>
               </div>
               <p className="text-xs leading-relaxed text-slate-300">
-                Powered by Murf Anisha Voice with ultra-fast sub-300ms speech synthesis.
+                Powered by Murf Anisha Voice with sub-300ms natural spoken Indian conversational register.
               </p>
             </div>
           </div>
         )}
 
-        {/* TAB 2: DEMO RECORDING SCRIPT */}
+        {/* TAB 2: DAY 3 FIVE AGENT STATES */}
+        {activeTab === 'states' && (
+          <div className="mb-6 grid w-full grid-cols-1 gap-2.5 text-left sm:grid-cols-2">
+            {agentStatesList.map((item, idx) => (
+              <div
+                key={idx}
+                className={`rounded-2xl border ${item.color} p-3 backdrop-blur-md transition-all`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-mono text-xs font-extrabold">{item.state}</span>
+                  <span className="text-[11px] font-bold">{item.badge}</span>
+                </div>
+                <p className="text-xs leading-snug text-slate-200">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* TAB 3: DEMO RECORDING SCRIPT */}
         {activeTab === 'script' && (
           <div className="mb-6 w-full space-y-3 text-left">
             <p className="mb-2 text-center font-mono text-xs text-slate-400">
-              💡 Use these 3 prompts for your 45-second Day 2 video recording!
+              💡 Use these prompts to record your Day 3 video demonstration!
             </p>
             {demoScript.map((item, idx) => (
               <div
@@ -245,7 +296,7 @@ export const WelcomeView = ({
           </div>
         )}
 
-        {/* TAB 3: GUARDRAILS & EVALS */}
+        {/* TAB 4: GUARDRAILS & EVALS */}
         {activeTab === 'guardrails' && (
           <div className="mb-6 w-full space-y-2.5 text-left text-xs">
             <div className="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-3.5 backdrop-blur-md">
@@ -288,10 +339,9 @@ export const WelcomeView = ({
           </div>
         )}
 
-        {/* Start Button */}
+        {/* Start Button (State 1 & State 5 restart) */}
         <div className="group relative mt-2">
-          {/* Button Outer Ring Pulse */}
-          <div className="absolute -inset-1 animate-pulse rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-sky-400 opacity-70 blur-lg transition duration-500 group-hover:opacity-100 group-hover:duration-200" />
+          <div className="absolute -inset-1 animate-pulse rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-sky-400 opacity-75 blur-lg transition duration-500 group-hover:opacity-100 group-hover:duration-200" />
 
           <Button
             size="lg"
@@ -300,7 +350,7 @@ export const WelcomeView = ({
           >
             <span className="relative z-10 flex items-center justify-center space-x-3">
               <span className="size-3 animate-ping rounded-full bg-slate-950" />
-              <span>{startButtonText}</span>
+              <span>{hasEndedCall ? (lang === 'hi' ? 'फिर से शुरू करें (Start Again)' : 'Start Again / New Lesson') : (lang === 'hi' ? 'कॉल शुरू करें (Start Call)' : startButtonText)}</span>
               <svg
                 className="size-6 transition-transform duration-300 group-hover:translate-x-1.5"
                 fill="none"
@@ -320,9 +370,9 @@ export const WelcomeView = ({
       </section>
 
       {/* Footer Branding */}
-      <div className="z-10 mt-12 text-center font-mono text-xs text-slate-400 space-y-1">
+      <div className="z-10 mt-10 text-center font-mono text-xs text-slate-400 space-y-1">
         <p className="font-semibold text-slate-300">
-          #VoiceForBharat • 10 Days of Voice Challenge (Day 2: Persona &amp; Guardrails)
+          #VoiceForBharat • 10 Days of Voice Challenge (Day 3: Human AI &amp; Smart Classroom)
         </p>
         <p>
           Built with{' '}

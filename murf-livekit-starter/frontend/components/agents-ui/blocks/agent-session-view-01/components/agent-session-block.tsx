@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { Track } from 'livekit-client';
 import { AnimatePresence, type MotionProps, motion } from 'motion/react';
 import { useAgent, useSessionContext, useSessionMessages } from '@livekit/components-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
@@ -8,6 +9,8 @@ import {
   AgentControlBar,
   type AgentControlBarControls,
 } from '@/components/agents-ui/agent-control-bar';
+import { AgentStateHeader } from '@/components/agents-ui/agent-state-header';
+import { MicrophoneErrorModal } from '@/components/agents-ui/microphone-error-modal';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { cn } from '@/lib/shadcn/utils';
 import { TileLayout } from './tile-view';
@@ -178,6 +181,9 @@ export function AgentSessionView_01({
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
   const [chatOpen, setChatOpen] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'hi'>('en');
+  const [micError, setMicError] = useState<string | null>(null);
+  const [isMicModalOpen, setIsMicModalOpen] = useState<boolean>(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { state: agentState } = useAgent();
 
@@ -187,6 +193,14 @@ export function AgentSessionView_01({
     chat: supportsChatInput,
     camera: supportsVideoInput,
     screenShare: supportsScreenShare,
+  };
+
+  const handleDeviceError = ({ source, error }: { source: Track.Source; error: Error }) => {
+    if (source === Track.Source.Microphone) {
+      console.warn('Microphone error detected:', error);
+      setMicError(error.message || 'Permission denied or microphone unavailable');
+      setIsMicModalOpen(true);
+    }
   };
 
   useEffect(() => {
@@ -204,10 +218,30 @@ export function AgentSessionView_01({
       className={cn('bg-background relative z-10 h-full w-full overflow-hidden', className)}
       {...props}
     >
-      <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
-      {/* transcript */}
+      {/* Top Header showing the 5 Day 3 Agent States */}
+      <AgentStateHeader
+        language={language}
+        onToggleLanguage={() => setLanguage((l) => (l === 'en' ? 'hi' : 'en'))}
+        micError={micError}
+        onShowMicError={() => setIsMicModalOpen(true)}
+      />
 
-      <div className="absolute top-0 bottom-[135px] flex w-full flex-col md:bottom-[170px]">
+      {/* Microphone Permission Modal */}
+      <MicrophoneErrorModal
+        isOpen={isMicModalOpen}
+        onClose={() => setIsMicModalOpen(false)}
+        onRetry={() => {
+          setIsMicModalOpen(false);
+          setMicError(null);
+        }}
+        errorMessage={micError ?? undefined}
+        language={language}
+      />
+
+      <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
+
+      {/* Transcript view */}
+      <div className="absolute top-16 bottom-[135px] flex w-full flex-col md:bottom-[170px]">
         <AnimatePresence>
           {chatOpen && (
             <motion.div
@@ -217,13 +251,14 @@ export function AgentSessionView_01({
               <AgentChatTranscript
                 agentState={agentState}
                 messages={messages}
-                className="mx-auto w-full max-w-2xl [&_.is-user>div]:rounded-[22px] [&>div>div]:px-4 [&>div>div]:pt-40 md:[&>div>div]:px-6"
+                className="mx-auto w-full max-w-2xl [&_.is-user>div]:rounded-[22px] [&>div>div]:px-4 [&>div>div]:pt-32 md:[&>div>div]:px-6"
               />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-      {/* Tile layout */}
+
+      {/* Tile layout with Audio Visualizer */}
       <TileLayout
         chatOpen={chatOpen}
         audioVisualizerType={audioVisualizerType}
@@ -236,7 +271,8 @@ export function AgentSessionView_01({
         audioVisualizerGridColumnCount={audioVisualizerGridColumnCount}
         audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
       />
-      {/* Bottom */}
+
+      {/* Bottom Control Bar */}
       <motion.div
         {...BOTTOM_VIEW_MOTION_PROPS}
         className="absolute inset-x-3 bottom-0 z-50 md:inset-x-12"
@@ -250,13 +286,16 @@ export function AgentSessionView_01({
                 duration={2}
                 aria-hidden={messages.length > 0}
                 {...SHIMMER_MOTION_PROPS}
-                className="pointer-events-none mx-auto block w-full max-w-2xl pb-4 text-center text-sm font-semibold"
+                className="pointer-events-none mx-auto block w-full max-w-2xl pb-4 text-center text-sm font-semibold text-amber-300"
               >
-                {preConnectMessage}
+                {language === 'hi'
+                  ? 'Shiksha AI आपकी बात सुन रही है, सवाल पूछें या अभ्यास करें'
+                  : preConnectMessage}
               </MotionMessage>
             )}
           </AnimatePresence>
         )}
+
         <div className="bg-background relative mx-auto max-w-2xl pb-3 md:pb-12">
           <Fade bottom className="absolute inset-x-0 top-0 h-4 -translate-y-full" />
           <AgentControlBar
@@ -266,6 +305,7 @@ export function AgentSessionView_01({
             isConnected={session.isConnected}
             onDisconnect={session.end}
             onIsChatOpenChange={setChatOpen}
+            onDeviceError={handleDeviceError}
           />
         </div>
       </motion.div>
