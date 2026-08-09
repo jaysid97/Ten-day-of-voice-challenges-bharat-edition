@@ -7,9 +7,11 @@ import {
   useLocalParticipant,
   useTracks,
   useVoiceAssistant,
+  useAgent,
 } from '@livekit/components-react';
 import { cn } from '@/lib/shadcn/utils';
 import { AudioVisualizer } from './audio-visualizer';
+import { HumanAITutor } from '@/components/app/human-ai-tutor';
 
 const ANIMATION_TRANSITION: MotionProps['transition'] = {
   type: 'spring',
@@ -19,41 +21,15 @@ const ANIMATION_TRANSITION: MotionProps['transition'] = {
 };
 
 const tileViewClassNames = {
-  // GRID
-  // 2 Columns x 3 Rows
   grid: [
     'h-full w-full',
     'grid gap-x-2 place-content-center',
     'grid-cols-[1fr_1fr] grid-rows-[90px_1fr_90px]',
   ],
-  // Agent
-  // chatOpen: true,
-  // hasSecondTile: true
-  // layout: Column 1 / Row 1
-  // align: x-end y-center
   agentChatOpenWithSecondTile: ['col-start-1 row-start-1', 'self-center justify-self-end'],
-  // Agent
-  // chatOpen: true,
-  // hasSecondTile: false
-  // layout: Column 1 / Row 1 / Column-Span 2
-  // align: x-center y-center
   agentChatOpenWithoutSecondTile: ['col-start-1 row-start-1', 'col-span-2', 'place-content-center'],
-  // Agent
-  // chatOpen: false
-  // layout: Column 1 / Row 1 / Column-Span 2 / Row-Span 3
-  // align: x-center y-center
   agentChatClosed: ['col-start-1 row-start-1', 'col-span-2 row-span-3', 'place-content-center'],
-  // Second tile
-  // chatOpen: true,
-  // hasSecondTile: true
-  // layout: Column 2 / Row 1
-  // align: x-start y-center
   secondTileChatOpen: ['col-start-2 row-start-1', 'self-center justify-self-start'],
-  // Second tile
-  // chatOpen: false,
-  // hasSecondTile: false
-  // layout: Column 2 / Row 2
-  // align: x-end y-end
   secondTileChatClosed: ['col-start-2 row-start-3', 'place-content-end'],
 };
 
@@ -93,6 +69,7 @@ export function TileLayout({
   audioVisualizerWaveLineWidth,
 }: TileLayoutProps) {
   const { videoTrack: agentVideoTrack } = useVoiceAssistant();
+  const agent = useAgent();
   const [screenShareTrack] = useTracks([Track.Source.ScreenShare]);
   const cameraTrack: TrackReference | undefined = useLocalTrackRef(Track.Source.Camera);
 
@@ -120,7 +97,7 @@ export function TileLayout({
           >
             <AnimatePresence mode="popLayout">
               {!isAvatar && (
-                // Audio Agent
+                // Audio Agent with Interactive Human AI Tutor Character & Visualizer
                 <motion.div
                   key="agent"
                   layoutId="agent"
@@ -130,12 +107,18 @@ export function TileLayout({
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
                   }}
-                  className={cn('relative aspect-square h-[90px]')}
+                  className={cn('relative flex flex-col items-center justify-center')}
                 >
+                  <HumanAITutor
+                    state={agent.state as any}
+                    size={chatOpen ? 'sm' : 'md'}
+                    className="mb-3 transition-all duration-300"
+                  />
+
                   <AudioVisualizer
                     key="audio-visualizer"
                     initial={{ scale: 1 }}
-                    animate={{ scale: chatOpen ? 0.2 : 1 }}
+                    animate={{ scale: chatOpen ? 0.2 : 0.8 }}
                     transition={{
                       ...ANIMATION_TRANSITION,
                       delay: animationDelay,
@@ -151,7 +134,7 @@ export function TileLayout({
                     audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
                     isChatOpen={chatOpen}
                     className={cn(
-                      'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+                      'relative mt-1',
                       'bg-background rounded-[50px] border border-transparent transition-[border,drop-shadow]',
                       chatOpen && 'border-input shadow-2xl/10 delay-200'
                     )}

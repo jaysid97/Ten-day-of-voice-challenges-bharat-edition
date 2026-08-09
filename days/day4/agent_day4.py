@@ -32,7 +32,7 @@ from db import (
     delete_user_profile,
 )
 
-logger = logging.getLogger("agent")
+logger = logging.getLogger("agent.day4")
 
 load_dotenv(".env.local")
 
@@ -196,15 +196,12 @@ server.setup_fnc = prewarm
 
 @server.rtc_session(agent_name=os.getenv("AGENT_NAME", "my-agent"))
 async def my_agent(ctx: JobContext):
-    # Logging setup
     ctx.log_context_fields = {
         "room": ctx.room.name,
     }
 
-    # Initialize SQLite DB
     init_db()
 
-    # Set up a voice AI pipeline using Murf Falcon, Gemini, Deepgram Multilingual, and LiveKit turn detector
     session = AgentSession(
         stt=deepgram.STT(
             model="nova-3",
@@ -226,10 +223,8 @@ async def my_agent(ctx: JobContext):
         user_away_timeout=12.0,
     )
 
-    # Check for returning user in SQLite
     recent_profile = get_most_recent_user_profile()
 
-    # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
         agent=Assistant(),
         room=ctx.room,
@@ -245,10 +240,8 @@ async def my_agent(ctx: JobContext):
         ),
     )
 
-    # Join the room and connect to the user
     await ctx.connect()
 
-    # Day 4 First-turn Greeting
     if recent_profile:
         name = recent_profile.get("name", "Learner")
         facts = recent_profile.get("facts", {})

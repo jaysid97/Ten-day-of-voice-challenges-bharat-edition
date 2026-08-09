@@ -105,61 +105,26 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
 }
 
 export interface AgentSessionView_01Props {
-  /**
-   * Message shown above the controls before the first chat message is sent.
-   *
-   * @default 'Agent is listening, ask it a question'
-   */
   preConnectMessage?: string;
-  /**
-   * Enables or disables the chat toggle and transcript input controls.
-   *
-   * @default true
-   */
   supportsChatInput?: boolean;
-  /**
-   * Enables or disables camera controls in the bottom control bar.
-   *
-   * @default true
-   */
   supportsVideoInput?: boolean;
-  /**
-   * Enables or disables screen sharing controls in the bottom control bar.
-   *
-   * @default true
-   */
   supportsScreenShare?: boolean;
-  /**
-   * Shows a pre-connect buffer state with a shimmer message before messages appear.
-   *
-   * @default true
-   */
   isPreConnectBufferEnabled?: boolean;
 
-  /** Selects the visualizer style rendered in the main tile area. */
   audioVisualizerType?: 'bar' | 'wave' | 'grid' | 'radial' | 'aura';
-  /** Primary hex color used by supported audio visualizer variants. */
   audioVisualizerColor?: `#${string}`;
-  /** Hue shift intensity used by certain visualizers. */
   audioVisualizerColorShift?: number;
-  /** Number of bars to render when `audioVisualizerType` is `bar`. */
   audioVisualizerBarCount?: number;
-  /** Number of rows in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridRowCount?: number;
-  /** Number of columns in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridColumnCount?: number;
-  /** Number of radial bars when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialBarCount?: number;
-  /** Base radius of the radial visualizer when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialRadius?: number;
-  /** Stroke width of the wave path when `audioVisualizerType` is `wave`. */
   audioVisualizerWaveLineWidth?: number;
-  /** Optional class name merged onto the outer `<section>` container. */
   className?: string;
 }
 
 export function AgentSessionView_01({
-  preConnectMessage = 'Agent is listening, ask it a question',
+  preConnectMessage = 'Shiksha AI is listening, speak or ask a study question',
   supportsChatInput = true,
   supportsVideoInput = true,
   supportsScreenShare = true,
@@ -180,7 +145,7 @@ export function AgentSessionView_01({
 }: React.ComponentProps<'section'> & AgentSessionView_01Props) {
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(true);
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const [micError, setMicError] = useState<string | null>(null);
   const [isMicModalOpen, setIsMicModalOpen] = useState<boolean>(false);
@@ -204,6 +169,9 @@ export function AgentSessionView_01({
   };
 
   useEffect(() => {
+    if (messages.length > 0) {
+      setChatOpen(true);
+    }
     const lastMessage = messages.at(-1);
     const lastMessageIsLocal = lastMessage?.from?.isLocal === true;
 
@@ -215,10 +183,16 @@ export function AgentSessionView_01({
   return (
     <section
       ref={ref}
-      className={cn('bg-background relative z-10 h-full w-full overflow-hidden', className)}
+      className={cn('bg-background relative z-10 h-full w-full overflow-hidden school-grid-bg', className)}
       {...props}
     >
-      {/* Top Header showing the 5 Day 3 Agent States */}
+      {/* Cyber Saffron-Cyan Tricolor Top Accent Line */}
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#FF9933] via-sky-400 to-[#138808] opacity-80 z-20" />
+
+      {/* Ambient Futuristic Smart Classroom Spotlight Glow */}
+      <div className="pointer-events-none absolute top-1/3 left-1/2 size-[550px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-amber-500/10 via-sky-500/10 to-emerald-500/10 blur-[130px]" />
+
+      {/* Top Header showing the Agent States */}
       <AgentStateHeader
         language={language}
         onToggleLanguage={() => setLanguage((l) => (l === 'en' ? 'hi' : 'en'))}
@@ -241,7 +215,7 @@ export function AgentSessionView_01({
       <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
 
       {/* Transcript view */}
-      <div className="absolute top-16 bottom-[135px] flex w-full flex-col md:bottom-[170px]">
+      <div className="absolute top-20 bottom-[120px] z-40 flex w-full flex-col md:bottom-[140px]">
         <AnimatePresence>
           {chatOpen && (
             <motion.div
@@ -258,7 +232,7 @@ export function AgentSessionView_01({
         </AnimatePresence>
       </div>
 
-      {/* Tile layout with Audio Visualizer */}
+      {/* Tile layout with Audio Visualizer & Futuristic Teacher Avatar */}
       <TileLayout
         chatOpen={chatOpen}
         audioVisualizerType={audioVisualizerType}
@@ -286,17 +260,17 @@ export function AgentSessionView_01({
                 duration={2}
                 aria-hidden={messages.length > 0}
                 {...SHIMMER_MOTION_PROPS}
-                className="pointer-events-none mx-auto block w-full max-w-2xl pb-4 text-center text-sm font-semibold text-amber-300"
+                className="pointer-events-none mx-auto block w-full max-w-2xl pb-4 text-center text-xs sm:text-sm font-semibold text-amber-300 font-mono tracking-wide"
               >
                 {language === 'hi'
-                  ? 'Shiksha AI आपकी बात सुन रही है, सवाल पूछें या अभ्यास करें'
-                  : preConnectMessage}
+                  ? '🎓 शिक्षा AI (Shiksha AI) आपकी बात सुन रही है, सवाल पूछें या अभ्यास करें'
+                  : '🎓 Shiksha AI is listening, speak or ask a study topic'}
               </MotionMessage>
             )}
           </AnimatePresence>
         )}
 
-        <div className="bg-background relative mx-auto max-w-2xl pb-3 md:pb-12">
+        <div className="bg-background relative mx-auto max-w-2xl pb-3 md:pb-12 border border-white/10 rounded-2xl p-2 bg-slate-950/80 backdrop-blur-xl shadow-2xl">
           <Fade bottom className="absolute inset-x-0 top-0 h-4 -translate-y-full" />
           <AgentControlBar
             variant="livekit"

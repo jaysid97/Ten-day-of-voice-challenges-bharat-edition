@@ -22,6 +22,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
+# Databases
+*.db
+
 # IDE & OS
 .DS_Store
 Thumbs.db
