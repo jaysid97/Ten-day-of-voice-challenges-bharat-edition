@@ -1,49 +1,91 @@
 # 🎙️ #VoiceForBharat — 10 Days of Voice AI Challenge (Bharat Edition)
 
-Welcome to the **10 Days of Voice Challenge (#VoiceForBharat)** repository featuring **Shiksha AI (शिक्षा AI)** — a Human-Type AI Voice Tutor built for Bharat (EdTech Track).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
+[![Murf Falcon](https://img.shields.io/badge/TTS-Murf%20Falcon%20(55ms)-6366F1)](https://murf.ai/api/docs/text-to-speech/streaming) 
+[![LiveKit](https://img.shields.io/badge/Transport-LiveKit%20Agents-002cf2)](https://docs.livekit.io) 
+[![Deepgram](https://img.shields.io/badge/STT-Deepgram%20Nova--3%20Multi-13EF95)](https://deepgram.com) 
+[![Gemini LLM](https://img.shields.io/badge/LLM-Google%20Gemini-4285F4)](https://aistudio.google.com/) 
+[![SQLite](https://img.shields.io/badge/Database-SQLite%20(Persistent%20Memory)-003B57)](https://www.sqlite.org/)
 
-Built using **Murf Falcon TTS API**, **LiveKit Agents**, **Gemini LLM**, and **Deepgram STT**.
+Welcome to the **10 Days of Voice AI Challenge (#VoiceForBharat)** repository featuring **Shiksha AI (शिक्षा AI)** — a Human-Type AI Voice Tutor built for Bharat (EdTech Track).
 
----
-
-## 📂 Challenge Progress Tracker
-
-| Day | Focus / Theme | Agent Name | Status / Highlights |
-|---|---|---|---|
-| **Day 1** | Voice Setup & LiveKit Engine | **IndicVox AI** | Basic real-time voice pipeline setup |
-| **Day 2** | Persona, Objectives & Guardrails | **Shiksha AI** | Hard refusals on ADHD/medical diagnosis, zero shaming, Hinglish support |
-| **Day 3** | Personalised Frontend & 5 Agent States | **Shiksha AI** | Human AI character avatar, smart classroom UI, 5 Agent States, Mic error modal, EN/Hindi toggle |
-| **Day 4** | Persistent Memory & Consent | **Shiksha AI** | SQLite database (`agent_memory.db`), learner facts, returning caller recognition, explicit consent rule |
-| **Day 5** | The Tools & Real Domain Data | **Shiksha AI** | Live Educational API (`fetch_ncert_exercise_and_syllabus`), multi-subject & language learning, Day 4 tool chaining, graceful out-loud fallbacks |
+**Shiksha AI** is an empathetic, patient, and multi-subject AI voice tutor that speaks fluent English, Hindi (native Devanagari script), and Hinglish. It features persistent SQLite learner memory, explicit caller consent rules, live REST API domain tools for multi-subject and language learning, memory tool chaining, and graceful out-loud failure fallbacks.
 
 ---
 
-## ⚡ Quick Start Guide (For GitHub Clones)
+## 📂 10 Days Challenge Progress Tracker
 
-Anyone can clone this repository and run the voice agent locally in 2 simple steps:
+| Day | Focus / Theme | Agent Name | Guide & Highlights | Status |
+|---|---|---|---|:---:|
+| **Day 1** | Voice Setup & LiveKit Engine | **IndicVox AI** | Real-time audio pipeline with Murf Falcon TTS & LiveKit | ✅ Completed |
+| **Day 2** | Persona, Objectives & Guardrails | **Shiksha AI** | Hard refusals on ADHD/medical diagnosis, zero shaming, Hinglish support | ✅ Completed |
+| **Day 3** | Smart Classroom UI & 5 States | **Shiksha AI** | Human character avatar, 5 Agent States, Mic unblock modal, EN/Hindi toggle | ✅ Completed |
+| **Day 4** | Persistent Memory & Consent | **Shiksha AI** | SQLite database (`agent_memory.db`), learner facts, returning caller recognition, explicit consent rule | ✅ Completed |
+| **Day 5** | Domain Tools & Multi-Subject Engine | **Shiksha AI** | [DAY5_GUIDE.md](./DAY5_GUIDE.md): Live Educational API, multi-subject & language learning, Day 4 tool chaining, graceful out-loud fallbacks | ✅ Completed |
+
+---
+
+## 🏗️ Architecture & Data Pipeline
+
+```mermaid
+flowchart TD
+    User[🎙️ Learner Speaks] -->|Audio Stream| STT[Deepgram STT Nova-3 Multi]
+    STT -->|Text Transcript| LLM[Google Gemini LLM]
+    
+    subgraph Memory & Domain Tools Layer
+        LLM <-->|DB Lookup / Save / Forget| SQLite[(SQLite DB: agent_memory.db)]
+        LLM <-->|Live Concept Fetch| WikiAPI[Wikipedia Educational REST API]
+        LLM <-->|Live Dictionary Lookup| DictAPI[Free Dictionary REST API]
+        WikiAPI -->|Timeout / Fallback| OfflineNCERT[Offline NCERT Curriculum Dataset]
+    end
+    
+    LLM -->|Spoken Text Response| TTS[Murf Falcon Streaming TTS]
+    TTS -->|High-Quality Audio| Transport[LiveKit Agent WebRTC Transport]
+    Transport -->|Audio Output| Speaker[🔊 Learner Hears Shiksha AI]
+
+    style User fill:#1E293B,stroke:#38BDF8,color:#fff
+    style STT fill:#064E3B,stroke:#10B981,color:#fff
+    style LLM fill:#1E1B4B,stroke:#818CF8,color:#fff
+    style SQLite fill:#78350F,stroke:#F59E0B,color:#fff
+    style WikiAPI fill:#0284C7,stroke:#38BDF8,color:#fff
+    style DictAPI fill:#4C1D95,stroke:#C084FC,color:#fff
+    style OfflineNCERT fill:#881337,stroke:#F43F5E,color:#fff
+    style TTS fill:#065F46,stroke:#34D399,color:#fff
+    style Transport fill:#1E293B,stroke:#F59E0B,color:#fff
+    style Speaker fill:#1E293B,stroke:#10B981,color:#fff
+```
+
+---
+
+## ⚡ Quick Start Guide (Run Locally in 2 Minutes)
 
 ### Step 1: Environment Setup
 1. Copy `murf-livekit-starter/backend/.env.example` to `murf-livekit-starter/backend/.env.local`
 2. Copy `murf-livekit-starter/frontend/.env.example` to `murf-livekit-starter/frontend/.env.local`
-3. Add your API keys:
+3. Add your API keys in `backend/.env.local`:
    - `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` ([LiveKit Cloud](https://cloud.livekit.io/))
    - `MURF_API_KEY` ([Murf AI](https://murf.ai/))
    - `DEEPGRAM_API_KEY` ([Deepgram](https://deepgram.com/))
    - `GOOGLE_API_KEY` ([Google AI Studio](https://aistudio.google.com/))
 
 ### Step 2: Run Application
-Execute the starter script in PowerShell:
-```powershell
-.\start_app.ps1
-```
-Then open **`http://localhost:3000`** in your browser!
+- **Windows (PowerShell)**:
+  ```powershell
+  .\start_app.ps1
+  ```
+- **macOS / Linux (Bash)**:
+  ```bash
+  chmod +x start_app.sh
+  ./start_app.sh
+  ```
+Open **`http://localhost:3000`** in your browser!
 
 ---
 
-## 🌟 Day 3 Highlight: Shiksha AI (Smart Classroom Frontend)
+## 🌟 Key Features Highlighted by Day
 
-- **Human-Type AI Tutor Avatar**: Character avatar with interactive expressions (blinking digital pupils when listening, animated voice mouth equalizer when speaking, warm smile when ready).
-- **Smart Classroom UI**: Digital blackboard backdrop (`school-grid-bg`) with floating academic particles (`📖`, `✏️`, `∑(x)`, `A B C`).
+### 🌟 Day 3 Highlight: Smart Classroom UI & 5 Agent States
+- **Human-Type AI Tutor Avatar**: Interactive avatar with smooth skin tones, blinking pupils, animated voice mouth equalizer, and ambient aura lighting.
 - **5 Explicit Agent States**:
   1. 🟢 **Ready**: Single clear start button on Welcome Screen
   2. 🟡 **Connecting**: Live connection wait status
@@ -53,10 +95,7 @@ Then open **`http://localhost:3000`** in your browser!
 - **Microphone Error Handling**: Step-by-step browser unblock modal in English & Hindi.
 - **Dual-Language UI**: Toggle `[ 🌐 EN ∣ 🇮🇳 हिन्दी ]` for all UI text.
 
----
-
-## 🧠 Day 4 Highlight: Persistent Memory, Tools & User Consent
-
+### 🧠 Day 4 Highlight: Persistent Memory, Tools & User Consent
 - **SQLite Database Memory (`agent_memory.db`)**: Stores learner identity, preferred language register, current grade level, topics covered, repeated struggles, and target study goals.
 - **LLM Function Tools**:
   - `lookup_caller(user_id_or_name)`: Reads caller history from SQLite.
@@ -64,12 +103,8 @@ Then open **`http://localhost:3000`** in your browser!
   - `forget_caller(user_id_or_name)`: Permanently erases caller records upon request.
 - **Hard Consent Rule**: The agent ALWAYS asks explicit permission (*"क्या मैं आपका लर्निंग डेटा और टॉपिक्स सेव कर लूँ?"*) BEFORE invoking `save_caller_facts`. If the caller says "No", no data is stored.
 - **Returning Learner Greeting**: Automatically recognizes returning callers on call start and welcomes them back by name (*"नमस्ते रमेश जी! पिछली बार हमने Class 8 Math fractions पढ़ा था..."*).
-- **Native Devanagari Hindi Script**: Generates clean Hindi in native Devanagari script for natural Murf Falcon Indian accent voice synthesis.
 
----
-
-## 🛠️ Day 5 Highlight: Real Domain Tools, Multi-Subject & Language Learning
-
+### 🛠️ Day 5 Highlight: Real Domain Tools, Multi-Subject & Language Learning
 - **Real Domain Tools (`src/tools.py`)**:
   - `fetch_ncert_exercise_and_syllabus`: Connects to live Wikipedia REST API to fetch concept summaries and practice questions for any subject.
   - `fetch_language_lesson_and_vocabulary`: Teaches lessons, script guides, greetings, and spoken practice exercises for ANY language.
@@ -82,3 +117,54 @@ Then open **`http://localhost:3000`** in your browser!
 - **Graceful Out-Loud Failure Path**: Catches HTTP timeouts/network errors and explicitly speaks the failure state aloud (*"The live network connection timed out, but here is the official NCERT offline curriculum..."*) with zero silence or hallucinations.
 - **Timestamped Attribution**: All returned data is timestamped (*"Sourced live as of today (2026-08-10)"*).
 - **Smoother Character Skin & UI HUD**: Redesigned tutor avatar with silky warm skin gradients, cheek blush, eye highlights, and a live Multi-Subject HUD status header in the script layout.
+
+---
+
+## 📁 Repository Directory Structure
+
+```text
+ten-day-voice-agent-bharat-edition/
+├── DAY1_GUIDE.md            # Day 1 Setup Guide
+├── DAY2_GUIDE.md            # Day 2 Persona & Guardrails Guide
+├── DAY3_GUIDE.md            # Day 3 Frontend & 5 Agent States Guide
+├── DAY4_GUIDE.md            # Day 4 SQLite Memory & Consent Guide
+├── DAY5_GUIDE.md            # Day 5 Real Domain Tools & Multi-Subject Guide
+├── README.md                # Main Repository Readme
+├── start_app.ps1            # Windows Application Starter Script
+├── start_app.sh             # Linux/macOS Application Starter Script
+├── backend -> murf-livekit-starter/backend (Symlink)
+├── frontend -> murf-livekit-starter/frontend (Symlink)
+└── murf-livekit-starter/
+    ├── backend/             # LiveKit Python Agent Backend
+    │   ├── src/
+    │   │   ├── agent.py     # Main Shiksha AI Agent Logic & Pipeline
+    │   │   ├── tools.py     # Day 5 Real Domain Tools & Language Engine
+    │   │   └── db.py        # Day 4 SQLite Memory Database Handler
+    │   └── tests/
+    │       └── test_day5_tools.py # Pytest Unit Suite for Day 5 Tools
+    └── frontend/            # Next.js 15 Smart Classroom Web App
+        ├── app/             # App Router Pages & Token Endpoints
+        └── components/
+            ├── app/
+            │   ├── human-ai-tutor.tsx  # Interactive Character Avatar
+            │   └── welcome-view.tsx    # Day 5 Welcome Screen & Scenarios
+            └── agents-ui/
+                └── agent-chat-transcript.tsx # Smart Classroom HUD Layout
+```
+
+---
+
+## 🧪 Running Automated Unit Tests
+
+To run the Day 5 automated unit test suite:
+```powershell
+cd murf-livekit-starter/backend
+uv run pytest tests/test_day5_tools.py
+```
+
+---
+
+## 📄 License & Credits
+
+Built with ❤️ for **#VoiceForBharat** — 10 Days of Voice Challenge by [Murf AI](https://murf.ai/).  
+Licensed under the [MIT License](LICENSE).
