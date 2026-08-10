@@ -273,6 +273,36 @@ For deeper documentation on each part, see:
 
 ---
 
+## 🧠 Day 4 Highlight: Persistent Memory, Tools & User Consent
+
+- **SQLite Database Memory (`agent_memory.db`)**: Stores learner identity, preferred language register, current grade level, topics covered, repeated struggles, and target study goals.
+- **LLM Function Tools**:
+  - `lookup_caller(user_id_or_name)`: Reads caller history from SQLite.
+  - `save_caller_facts(...)`: Saves learner profile into SQLite.
+  - `forget_caller(user_id_or_name)`: Permanently erases caller records upon request.
+- **Hard Consent Rule**: The agent ALWAYS asks explicit permission (*"क्या मैं आपका लर्निंग डेटा और टॉपिक्स सेव कर लूँ?"*) BEFORE invoking `save_caller_facts`. If the caller says "No", no data is stored.
+- **Returning Learner Greeting**: Automatically recognizes returning callers on call start and welcomes them back by name (*"नमस्ते रमेश जी! पिछली बार हमने Class 8 Math fractions पढ़ा था..."*).
+- **Native Devanagari Hindi Script**: Generates clean Hindi in native Devanagari script for natural Murf Falcon Indian accent voice synthesis.
+
+---
+
+## 🛠️ Day 5 Highlight: Real Domain Tools, Multi-Subject & Language Learning
+
+- **Real Domain Tools (`src/tools.py`)**:
+  - `fetch_ncert_exercise_and_syllabus`: Connects to live Wikipedia REST API to fetch concept summaries and practice questions for any subject.
+  - `fetch_language_lesson_and_vocabulary`: Teaches lessons, script guides, greetings, and spoken practice exercises for ANY language.
+  - `fetch_subject_quiz_and_solution`: Generates educational practice quizzes with step-by-step solutions.
+  - `lookup_word_meaning_and_origin`: Queries live dictionary API for definitions, phonetics, and origins.
+- **Multi-Subject & Multi-Language Support**:
+  - **Subjects**: Mathematics, Physics, Chemistry, Biology, History, Geography, Civics, Economics, Computer Science / Coding, General Knowledge, Literature.
+  - **Languages**: Hindi, Sanskrit, Tamil, Telugu, Marathi, Gujarati, Bengali, Punjabi, Kannada, Malayalam, Spoken English, French, Spanish, German, Japanese.
+- **Day 4 + Day 5 Memory Tool Chaining**: Automatically inspects saved grade/language level from Day 4 SQLite memory if omitted by the user (e.g. asking for *"exercise on Light"* auto-retrieves *"Class 10 Science"*).
+- **Graceful Out-Loud Failure Path**: Catches HTTP timeouts/network errors and explicitly speaks the failure state aloud (*"The live network connection timed out, but here is the official NCERT offline curriculum..."*) with zero silence or hallucinations.
+- **Timestamped Attribution**: All returned data is timestamped (*"Sourced live as of today (2026-08-10)"*).
+- **Smoother Character Skin & UI HUD**: Redesigned tutor avatar with silky warm skin gradients, cheek blush, eye highlights, and a live Multi-Subject HUD status header in the script layout.
+
+---
+
 ## License
 
 MIT
