@@ -56,7 +56,7 @@ export function AgentStateHeader({
             <h2 className="flex items-center gap-2 text-sm font-black tracking-tight text-white sm:text-base">
               <span>Shiksha AI</span>
               <span className="rounded-md border border-amber-500/40 bg-amber-950/60 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-300">
-                DAY 4 • PERSISTENT MEMORY
+                DAY 5 • REAL DOMAIN TOOLS &amp; MULTI-SUBJECT
               </span>
             </h2>
             <p className="text-[11px] font-medium text-slate-400">

@@ -13,6 +13,8 @@ Built using **Murf Falcon TTS API**, **LiveKit Agents**, **Gemini LLM**, and **D
 | **Day 1** | Voice Setup & LiveKit Engine | **IndicVox AI** | Basic real-time voice pipeline setup |
 | **Day 2** | Persona, Objectives & Guardrails | **Shiksha AI** | Hard refusals on ADHD/medical diagnosis, zero shaming, Hinglish support |
 | **Day 3** | Personalised Frontend & 5 Agent States | **Shiksha AI** | Human AI character avatar, smart classroom UI, 5 Agent States, Mic error modal, EN/Hindi toggle |
+| **Day 4** | Persistent Memory & Consent | **Shiksha AI** | SQLite database (`agent_memory.db`), learner facts, returning caller recognition, explicit consent rule |
+| **Day 5** | The Tools & Real Domain Data | **Shiksha AI** | Live Educational API (`fetch_ncert_exercise_and_syllabus`), Day 4 tool chaining, graceful out-loud fallbacks |
 
 ---
 

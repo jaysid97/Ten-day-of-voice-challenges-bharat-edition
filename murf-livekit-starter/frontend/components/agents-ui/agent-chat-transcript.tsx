@@ -26,35 +26,55 @@ export function AgentChatTranscript({
   return (
     <div className="relative mx-auto w-full max-w-2xl px-2 sm:px-4">
       {/* Sci-Fi Smart Classroom HUD Container */}
-      <div className="relative rounded-3xl border border-sky-500/30 bg-slate-950/90 p-4 sm:p-6 shadow-2xl shadow-sky-500/20 backdrop-blur-2xl overflow-hidden school-grid-bg">
+      <div className="relative rounded-3xl border border-amber-400/40 bg-slate-950/95 p-4 sm:p-6 shadow-2xl shadow-amber-500/20 backdrop-blur-2xl overflow-hidden school-grid-bg">
         
-        {/* Top Sci-Fi HUD Header Bar */}
-        <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
-          <div className="flex items-center space-x-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-500"></span>
-            </span>
-            <span className="font-mono text-xs font-black tracking-widest text-sky-300 uppercase">
-              ⚛️ SCI-FI SMART CLASSROOM HUD • SHIKSHA AI
-            </span>
+        {/* Top Sci-Fi HUD Header Bar for Day 5 */}
+        <div className="mb-3 flex flex-col space-y-2 border-b border-white/10 pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+              </span>
+              <span className="font-mono text-xs font-black tracking-widest text-amber-300 uppercase">
+                ⚛️ SMART CLASSROOM HUD • SHIKSHA AI
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-1.5 font-mono text-[10px] text-sky-300 bg-slate-900/80 px-2 py-0.5 rounded-full border border-sky-400/30">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>LIVE API &amp; MEMORY CHAINING ACTIVE</span>
+            </div>
           </div>
 
-          <div className="hidden sm:flex items-center space-x-2 font-mono text-[10px] text-amber-300">
-            <span>🧬 SCIENCE &amp; LITERACY</span>
-            <span className="text-slate-500">•</span>
-            <span>E=mc²</span>
+          {/* Day 5 Multi-Subject & Language Learning Pills */}
+          <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono">
+            <span className="rounded-md bg-amber-500/15 border border-amber-400/30 px-2 py-0.5 text-amber-200">
+              📐 Math &amp; Physics
+            </span>
+            <span className="rounded-md bg-emerald-500/15 border border-emerald-400/30 px-2 py-0.5 text-emerald-200">
+              🔬 Science &amp; Chemistry
+            </span>
+            <span className="rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-0.5 text-cyan-200">
+              💻 Coding &amp; CS
+            </span>
+            <span className="rounded-md bg-purple-500/15 border border-purple-400/30 px-2 py-0.5 text-purple-200">
+              🇮🇳 Hindi &amp; Sanskrit
+            </span>
+            <span className="rounded-md bg-rose-500/15 border border-rose-400/30 px-2 py-0.5 text-rose-200">
+              🌐 Tamil &amp; Languages
+            </span>
           </div>
         </div>
 
         {/* Ambient Floating Science & Academic Symbols */}
-        <div className="pointer-events-none absolute top-4 left-6 text-xl text-sky-400/20 animate-pulse">
+        <div className="pointer-events-none absolute top-4 left-6 text-xl text-sky-400/15 animate-pulse">
           ⚛️
         </div>
-        <div className="pointer-events-none absolute bottom-8 right-6 text-xl text-amber-400/20 animate-pulse">
+        <div className="pointer-events-none absolute bottom-8 right-6 text-xl text-amber-400/15 animate-pulse">
           🧬
         </div>
-        <div className="pointer-events-none absolute top-1/2 right-4 text-xl text-emerald-400/20 animate-pulse">
+        <div className="pointer-events-none absolute top-1/2 right-4 text-xl text-emerald-400/15 animate-pulse">
           🪐
         </div>
 
@@ -83,7 +103,7 @@ export function AgentChatTranscript({
                       </span>
                     ) : (
                       <span className="text-amber-300 flex items-center gap-1">
-                        <span>🎓 SHIKSHA AI (TEACHER)</span>
+                        <span>🎓 SHIKSHA AI (MULTI-SUBJECT TUTOR)</span>
                         <span className="text-[9px] text-slate-500">{time}</span>
                       </span>
                     )}
@@ -107,7 +127,7 @@ export function AgentChatTranscript({
               {agentState === 'thinking' && (
                 <div className="flex items-center space-x-2 py-2 text-xs font-mono text-amber-300">
                   <AgentChatIndicator size="sm" />
-                  <span>Shiksha AI (Teacher) is thinking...</span>
+                  <span>Shiksha AI is fetching live educational data &amp; processing response...</span>
                 </div>
               )}
             </AnimatePresence>

@@ -43,29 +43,29 @@ export function HumanAITutor({ state = 'ready', size = 'md', className }: HumanA
       />
 
       {/* Floating Academic Symbols Around Avatar */}
-      <div className="absolute -top-2 -left-4 font-serif text-sm sm:text-base font-bold text-amber-300/40 float-symbol-1 pointer-events-none">
+      <div className="absolute -top-2 -left-4 font-serif text-sm sm:text-base font-bold text-amber-300/50 float-symbol-1 pointer-events-none">
         📖
       </div>
-      <div className="absolute -bottom-1 -right-4 font-mono text-xs sm:text-sm font-bold text-sky-300/40 float-symbol-2 pointer-events-none">
+      <div className="absolute -bottom-1 -right-4 font-mono text-xs sm:text-sm font-bold text-sky-300/50 float-symbol-2 pointer-events-none">
         ∑(x)
       </div>
-      <div className="absolute -top-2 -right-4 font-serif text-sm sm:text-base font-bold text-emerald-300/40 float-symbol-3 pointer-events-none">
+      <div className="absolute -top-2 -right-4 font-serif text-sm sm:text-base font-bold text-emerald-300/50 float-symbol-3 pointer-events-none">
         ✏️
       </div>
-      <div className="absolute -bottom-1 -left-4 font-mono text-xs sm:text-sm font-bold text-amber-300/40 float-symbol-4 pointer-events-none">
+      <div className="absolute -bottom-1 -left-4 font-mono text-xs sm:text-sm font-bold text-amber-300/50 float-symbol-4 pointer-events-none">
         A B C
       </div>
 
       {/* Human AI Tutor Avatar Card Frame */}
       <div
         className={cn(
-          'relative flex items-center justify-center rounded-full border-2 border-white/25 bg-slate-950/90 shadow-2xl backdrop-blur-2xl transition-all duration-500 hover:scale-105 hover:border-amber-400/70',
+          'relative flex items-center justify-center rounded-full border-2 border-amber-400/40 bg-slate-950/90 shadow-2xl backdrop-blur-2xl transition-all duration-500 hover:scale-105 hover:border-amber-400/80',
           size === 'sm' && 'size-20',
           size === 'md' && 'size-28',
           size === 'lg' && 'size-32'
         )}
       >
-        {/* Human AI Character Face Graphic SVG */}
+        {/* Human AI Character Face Graphic SVG with Silky Smooth Skin Shading */}
         <svg
           viewBox="0 0 120 120"
           fill="none"
@@ -77,48 +77,60 @@ export function HumanAITutor({ state = 'ready', size = 'md', className }: HumanA
           )}
         >
           {/* Head Base Glow */}
-          <circle cx="60" cy="60" r="50" fill="url(#avatarGlow)" fillOpacity="0.15" />
+          <circle cx="60" cy="60" r="52" fill="url(#avatarGlow)" fillOpacity="0.2" />
+
+          {/* Smooth Human Skin Face Base Contour */}
+          <ellipse cx="60" cy="64" rx="34" ry="38" fill="url(#smoothSkinGrad)" />
+          {/* Soft Natural Face Cheek Blush */}
+          <circle cx="40" cy="68" r="8" fill="url(#blushGrad)" opacity="0.45" />
+          <circle cx="80" cy="68" r="8" fill="url(#blushGrad)" opacity="0.45" />
+          {/* Chin & Jaw Ambient Soft Lighting Shadow */}
+          <path d="M38 78C48 88 72 88 82 78C76 92 44 92 38 78Z" fill="#D98A6C" opacity="0.3" />
 
           {/* Academic Graduation Cap (Bharat Cyber EdTech) */}
           <path
-            d="M60 18L18 34L60 50L102 34L60 18Z"
+            d="M60 16L16 32L60 48L104 32L60 16Z"
             fill="url(#gradCapGrad)"
             stroke="#F59E0B"
             strokeWidth="2"
           />
-          <path d="M30 40V58C30 65 43.4 72 60 72C76.6 72 90 65 90 58V40" stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="3 3" />
-          <path d="M92 36V55" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="92" cy="57" r="2.5" fill="#38BDF8" />
+          <path d="M28 38V56C28 63 42 70 60 70C78 70 92 63 92 56V38" stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="3 3" />
+          <path d="M94 34V54" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="94" cy="56" r="2.5" fill="#38BDF8" />
 
-          {/* Friendly Eyebrows */}
-          <path d="M38 52C42 49 48 49 52 52" stroke="#FCD34D" strokeWidth="2.5" strokeLinecap="round" />
-          <path d="M68 52C72 49 78 49 82 52" stroke="#FCD34D" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Friendly Smooth Eyebrows */}
+          <path d="M38 50C43 47 49 47 53 50" stroke="#78350F" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M67 50C71 47 77 47 82 50" stroke="#78350F" strokeWidth="2.5" strokeLinecap="round" />
 
-          {/* Animated Expressive Eyes */}
+          {/* Expressive Eyes withspecular Highlights */}
           <g className={cn(isThinking && 'animate-pulse')}>
-            <circle cx="45" cy="60" r="6" fill="#38BDF8" />
-            <circle cx="75" cy="60" r="6" fill="#38BDF8" />
-            <circle cx="47" cy="58" r="2" fill="white" />
-            <circle cx="77" cy="58" r="2" fill="white" />
+            {/* Eye Sclera & Iris */}
+            <circle cx="45" cy="58" r="6.5" fill="#0284C7" />
+            <circle cx="75" cy="58" r="6.5" fill="#0284C7" />
+            <circle cx="45" cy="58" r="3.5" fill="#0F172A" />
+            <circle cx="75" cy="58" r="3.5" fill="#0F172A" />
+            {/* Specular Catchlight Highlights */}
+            <circle cx="47" cy="56" r="2" fill="#FFFFFF" />
+            <circle cx="77" cy="56" r="2" fill="#FFFFFF" />
           </g>
 
-          {/* Smart Classroom Glasses */}
-          <rect x="36" y="53" width="18" height="14" rx="4" stroke="#F59E0B" strokeWidth="2" fill="none" />
-          <rect x="66" y="53" width="18" height="14" rx="4" stroke="#F59E0B" strokeWidth="2" fill="none" />
-          <line x1="54" y1="60" x2="66" y2="60" stroke="#F59E0B" strokeWidth="2" />
+          {/* Polished Smart Glasses with Amber Metallic Sheen */}
+          <rect x="35" y="51" width="20" height="15" rx="4" stroke="#F59E0B" strokeWidth="2.2" fill="none" />
+          <rect x="65" y="51" width="20" height="15" rx="4" stroke="#F59E0B" strokeWidth="2.2" fill="none" />
+          <line x1="55" y1="58" x2="65" y2="58" stroke="#F59E0B" strokeWidth="2" />
 
           {/* Dynamic Mouth / Spoken Waveform Equalizer */}
           {isSpeaking ? (
             <g className="animate-pulse">
-              <line x1="44" y1="80" x2="44" y2="86" stroke="#10B981" strokeWidth="3" strokeLinecap="round" />
-              <line x1="52" y1="76" x2="52" y2="90" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
-              <line x1="60" y1="74" x2="60" y2="92" stroke="#38BDF8" strokeWidth="4" strokeLinecap="round" />
-              <line x1="68" y1="76" x2="68" y2="90" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
-              <line x1="76" y1="80" x2="76" y2="86" stroke="#10B981" strokeWidth="3" strokeLinecap="round" />
+              <line x1="44" y1="78" x2="44" y2="84" stroke="#10B981" strokeWidth="3" strokeLinecap="round" />
+              <line x1="52" y1="74" x2="52" y2="88" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
+              <line x1="60" y1="72" x2="60" y2="90" stroke="#38BDF8" strokeWidth="4" strokeLinecap="round" />
+              <line x1="68" y1="74" x2="68" y2="88" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" />
+              <line x1="76" y1="78" x2="76" y2="84" stroke="#10B981" strokeWidth="3" strokeLinecap="round" />
             </g>
           ) : isListening ? (
             <path
-              d="M48 80C48 86 72 86 72 80"
+              d="M48 78C48 84 72 84 72 78"
               stroke="#10B981"
               strokeWidth="3.5"
               strokeLinecap="round"
@@ -127,22 +139,38 @@ export function HumanAITutor({ state = 'ready', size = 'md', className }: HumanA
             />
           ) : (
             <path
-              d="M46 79C52 85 68 85 74 79"
-              stroke="#F59E0B"
+              d="M46 77C52 83 68 83 74 77"
+              stroke="#B45309"
               strokeWidth="3.5"
               strokeLinecap="round"
               fill="none"
             />
           )}
 
-          {/* SVG Gradients */}
+          {/* SVG Definitions for Silky Smooth Skin & Cap Gradients */}
           <defs>
-            <linearGradient id="gradCapGrad" x1="18" y1="18" x2="102" y2="50" gradientUnits="userSpaceOnUse">
+            {/* Silky Smooth Skin Gradient */}
+            <linearGradient id="smoothSkinGrad" x1="60" y1="26" x2="60" y2="102" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#FFF0E5" />
+              <stop offset="50%" stopColor="#F9D7C2" />
+              <stop offset="100%" stopColor="#E5AB8B" />
+            </linearGradient>
+
+            {/* Cheek Blush Gradient */}
+            <radialGradient id="blushGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FF7A85" />
+              <stop offset="100%" stopColor="#FF7A85" stopOpacity="0" />
+            </radialGradient>
+
+            {/* Graduation Cap Gradient */}
+            <linearGradient id="gradCapGrad" x1="16" y1="16" x2="104" y2="48" gradientUnits="userSpaceOnUse">
               <stop stopColor="#D97706" />
               <stop offset="0.5" stopColor="#F59E0B" />
               <stop offset="1" stopColor="#0284C7" />
             </linearGradient>
-            <radialGradient id="avatarGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(60 60) scale(50)">
+
+            {/* Background Avatar Glow */}
+            <radialGradient id="avatarGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(60 60) scale(52)">
               <stop stopColor="#F59E0B" />
               <stop offset="1" stopColor="#38BDF8" stopOpacity="0" />
             </radialGradient>
@@ -150,8 +178,8 @@ export function HumanAITutor({ state = 'ready', size = 'md', className }: HumanA
         </svg>
 
         {/* State Indicator Floating Badge */}
-        <div className="absolute -bottom-1.5 rounded-full border border-white/20 bg-slate-900/90 px-2 py-0.5 shadow-md backdrop-blur-md">
-          <span className="font-mono text-[9px] font-extrabold uppercase text-amber-300">
+        <div className="absolute -bottom-1.5 rounded-full border border-amber-400/40 bg-slate-900/90 px-2.5 py-0.5 shadow-lg backdrop-blur-md">
+          <span className="font-mono text-[9px] font-extrabold uppercase tracking-wide text-amber-300">
             {isSpeaking
               ? '🔊 SPEAKING'
               : isListening

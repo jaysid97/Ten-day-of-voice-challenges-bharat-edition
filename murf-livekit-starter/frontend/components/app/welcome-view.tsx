@@ -16,36 +16,45 @@ export const WelcomeView = ({
   hasEndedCall = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'day4memory' | 'states' | 'guardrails'>('day4memory');
+  const [activeTab, setActiveTab] = useState<'overview' | 'day5tools' | 'states' | 'guardrails'>('day5tools');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
 
-  const day4MemoryDemoScript = [
+  const day5ToolsDemoScript = [
     {
-      scene: 'Call 1: Introduce & Grant Consent',
-      title: 'First Call (New Learner)',
-      prompt: 'मेरा नाम रमेश है, मैं Class 8 का मैथ फ्रैक्शंस पढ़ना चाहता हूँ।',
-      expectedOutcome: 'Agent introduces topic and asks: "रमेश जी, क्या मैं आपका लर्निंग डेटा सेव कर लूँ?"',
-      userConsent: 'हाँ, सेव कर लो',
-      type: 'Call 1 Flow',
+      scene: 'Scenario 1: Live Tool Fetch & Exercise',
+      title: 'Multi-Subject Educational Tool',
+      prompt: 'मेरा नाम रमेश है, मुझे Class 8 Math Fractions का प्रश्न दो।',
+      expectedOutcome: 'Agent calls fetch_ncert_exercise_and_syllabus tool, fetches live concept summary, and presents practice exercise aloud.',
+      userConsent: 'Live Educational API Call',
+      type: 'Live Tool Fetch',
       color: 'from-amber-500/20 to-orange-500/10 border-amber-500/30 text-amber-300',
     },
     {
-      scene: 'Call 2: Returning Learner Greeting',
-      title: 'Second Call (Returning Learner)',
-      prompt: '(Connect session again without giving name)',
-      expectedOutcome: 'Agent immediately greets: "नमस्ते रमेश जी! पिछली बार हमने Class 8 Math fractions पढ़ा था..."',
-      userConsent: 'Auto-retrieved from SQLite DB',
-      type: 'Call 2 Flow',
+      scene: 'Scenario 2: Multi-Language Learning',
+      title: 'Language Learning Tool (Sanskrit/French/Hindi)',
+      prompt: 'Teach me basic greetings in Sanskrit and French.',
+      expectedOutcome: 'Agent calls fetch_language_lesson_and_vocabulary tool and teaches greetings, grammar tips, and practice phrases.',
+      userConsent: 'Multi-Language Engine',
+      type: 'Language Tool',
+      color: 'from-purple-500/20 to-indigo-500/10 border-purple-500/30 text-purple-300',
+    },
+    {
+      scene: 'Scenario 3: Memory Tool Chaining',
+      title: 'Day 4 Memory + Day 5 Tool Chaining',
+      prompt: 'Give me a practice exercise on Light.',
+      expectedOutcome: 'Agent auto-retrieves saved grade level (Class 10 Science) from Day 4 SQLite memory and fetches Class 10 Light exercise without re-asking.',
+      userConsent: 'Auto-Chained from Memory',
+      type: 'Tool Chaining',
       color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-300',
     },
     {
-      scene: 'Advanced: Wipe Learner Record',
-      title: 'Forget Me Tool',
-      prompt: 'मेरा डेटा डिलीट कर दो (Forget me)',
-      expectedOutcome: 'Agent executes forget_caller("ramesh") tool and confirms record deletion.',
-      userConsent: 'Database Record Wiped',
-      type: 'Optional Wipe Flow',
+      scene: 'Scenario 4: Graceful Out-Loud Fallback',
+      title: 'API Timeout / Offline Network Handling',
+      prompt: '(Offline / Network server unreachable test)',
+      expectedOutcome: 'Agent explicitly states out loud: "The live server timed out...", then seamlessly presents offline NCERT curriculum data.',
+      userConsent: 'Out-Loud Fallback Active',
+      type: 'Graceful Fallback',
       color: 'from-rose-500/20 to-amber-500/10 border-rose-500/30 text-rose-300',
     },
   ];
@@ -113,7 +122,7 @@ export const WelcomeView = ({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
             </span>
-            <span>🇮🇳 DAY 4 • PERSISTENT MEMORY &amp; SQLITE</span>
+            <span>🇮🇳 DAY 5 • REAL DOMAIN TOOLS &amp; MULTI-SUBJECT LEARNING</span>
           </div>
 
           <button
@@ -134,7 +143,7 @@ export const WelcomeView = ({
             <p className="mt-0.5 text-[11px] text-slate-300">
               {lang === 'hi'
                 ? 'आपका वॉइस सेशन समाप्त हो गया है। नया सेशन शुरू करने के लिए नीचे बटन दबाएं।'
-                : 'Your voice session with Shiksha AI has concluded. Click below to test Call 2 returning greeting.'}
+                : 'Your voice session with Shiksha AI has concluded. Click below to start a new session.'}
             </p>
           </div>
         )}
@@ -152,39 +161,39 @@ export const WelcomeView = ({
           </span>
         </h1>
 
-        {/* Day 4 Ready Badge */}
+        {/* Day 5 Ready Badge */}
         <div className="mb-2 inline-flex items-center space-x-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-3 py-0.5 text-[11px] font-extrabold text-emerald-300 shadow-md">
           <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
           <span>
             {lang === 'hi'
-              ? '🟢 स्टेट 1: एजेंट तैयार है (SQLite Memory Active)'
-              : '🟢 Day 4: Persistent Memory & SQLite Active'}
+              ? '🟢 डे 5: रियल डोमेन टूल्स एवं बहु-विषय भाषा शिक्षण एक्टिव'
+              : '🟢 Day 5: Real Domain Tools, Multi-Subject & Language Learning Active'}
           </span>
         </div>
 
         <p className="mb-1.5 max-w-xl text-base font-medium leading-snug text-amber-200/90 sm:text-xl">
           {lang === 'hi'
-            ? 'भारत के लिए याददाश्त वाला Human AI वॉइस ट्यूटर'
-            : 'Human-Type AI Voice Tutor with Persistent Memory & Consent'}
+            ? 'भारत के लिए रियल-टाइम टूल्स एवं बहु-विषय Human AI वॉइस ट्यूटर'
+            : 'Human-Type AI Voice Tutor with Real-Time Domain Tools & Memory'}
         </p>
 
         <p className="mb-4 max-w-lg text-xs font-normal leading-relaxed text-slate-300 sm:text-sm">
           {lang === 'hi'
-            ? 'शिक्षा AI अब आपकी सीखने की प्रगति और नाम को SQLite डेटाबेस में सहेजती है और वापस आने पर स्वागत करती है।'
-            : 'Shiksha AI now remembers learners across calls using SQLite database tools, respects user consent, and greets returning callers by name.'}
+            ? 'शिक्षा AI अब रियल-टाइम API टूल्स के माध्यम से किसी भी विषय (गणित, विज्ञान, कोडिंग) और भाषा (हिंदी, संस्कृत, तमिल, फ़्रेंच) का अभ्यास कराती है।'
+            : 'Shiksha AI now fetches real educational data & practice problems across ALL subjects and languages using live API tools with Day 4 memory chaining and graceful out-loud fallbacks.'}
         </p>
 
         {/* Tab Navigation Controls */}
         <div className="mb-3 flex flex-wrap items-center justify-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 text-xs font-semibold backdrop-blur-md">
           <button
-            onClick={() => setActiveTab('day4memory')}
+            onClick={() => setActiveTab('day5tools')}
             className={`rounded-lg px-3 py-1.5 transition-all ${
-              activeTab === 'day4memory'
+              activeTab === 'day5tools'
                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            🧠 Day 4 Memory &amp; 2-Call Demo
+            🛠️ Day 5 Tools &amp; Test Scenarios
           </button>
           <button
             onClick={() => setActiveTab('overview')}
@@ -218,13 +227,13 @@ export const WelcomeView = ({
           </button>
         </div>
 
-        {/* TAB 1: DAY 4 MEMORY & 2-CALL DEMO SCRIPT */}
-        {activeTab === 'day4memory' && (
+        {/* TAB 1: DAY 5 TOOLS & TEST SCENARIOS */}
+        {activeTab === 'day5tools' && (
           <div className="mb-4 w-full space-y-2 text-left max-h-[220px] overflow-y-auto pr-1">
             <p className="mb-1 text-center font-mono text-[11px] text-amber-300">
-              💡 Use these test scenarios to record your Day 4 video demonstration!
+              💡 Use these test scenarios to record your Day 5 video demonstration!
             </p>
-            {day4MemoryDemoScript.map((item, idx) => (
+            {day5ToolsDemoScript.map((item, idx) => (
               <div
                 key={idx}
                 className={`group relative rounded-xl border bg-gradient-to-r ${item.color} p-3 backdrop-blur-md transition-all`}
@@ -259,31 +268,31 @@ export const WelcomeView = ({
           <div className="mb-4 grid w-full grid-cols-1 gap-2 text-left sm:grid-cols-3">
             <div className="group rounded-xl border border-white/10 bg-slate-900/70 p-3 backdrop-blur-md transition-all hover:border-amber-500/50">
               <div className="mb-1 flex items-center space-x-1.5 text-xs font-bold text-amber-400">
-                <span className="text-sm">🗄️</span>
-                <span>SQLite Memory</span>
+                <span className="text-sm">🌐</span>
+                <span>Real Domain Tools</span>
               </div>
               <p className="text-[11px] leading-relaxed text-slate-300">
-                Saves caller name, study level, topics covered, struggles, and target goals in an embedded SQLite database.
+                Connects to live Educational REST APIs to fetch real concepts, exercises, and vocabulary across all subjects.
               </p>
             </div>
 
             <div className="group rounded-xl border border-white/10 bg-slate-900/70 p-3 backdrop-blur-md transition-all hover:border-sky-400/50">
               <div className="mb-1 flex items-center space-x-1.5 text-xs font-bold text-sky-400">
-                <span className="text-sm">🛠️</span>
-                <span>Function Calling Tools</span>
+                <span className="text-sm">🔗</span>
+                <span>Day 4 Memory Chaining</span>
               </div>
               <p className="text-[11px] leading-relaxed text-slate-300">
-                LLM invokes lookup_caller, save_caller_facts, and forget_caller tools dynamically without prompt hardcoding.
+                Auto-chains learner grade and language level saved in SQLite memory directly into today's tool lookup without re-asking.
               </p>
             </div>
 
             <div className="group rounded-xl border border-white/10 bg-slate-900/70 p-3 backdrop-blur-md transition-all hover:border-emerald-400/50">
               <div className="mb-1 flex items-center space-x-1.5 text-xs font-bold text-emerald-400">
-                <span className="text-sm">🔒</span>
-                <span>Explicit User Consent</span>
+                <span className="text-sm">🗣️</span>
+                <span>Graceful Out-Loud Fallback</span>
               </div>
               <p className="text-[11px] leading-relaxed text-slate-300">
-                Strictly asks caller permission before saving facts. If the caller declines, no data is stored.
+                Explicitly speaks network failure states aloud when APIs time out, seamlessly falling back to cached NCERT curriculum data.
               </p>
             </div>
           </div>
@@ -359,7 +368,7 @@ export const WelcomeView = ({
           >
             <span className="relative z-10 flex items-center justify-center space-x-2.5">
               <span className="size-2.5 animate-ping rounded-full bg-slate-950" />
-              <span>{hasEndedCall ? (lang === 'hi' ? 'फिर से शुरू करें (Start Call 2)' : 'Start Call 2 (Test Returning Memory)') : (lang === 'hi' ? 'कॉल शुरू करें (Start Call 1)' : startButtonText)}</span>
+              <span>{hasEndedCall ? (lang === 'hi' ? 'फिर से शुरू करें (Start Session)' : 'Start New Session (Test Day 5 Tools)') : (lang === 'hi' ? 'कॉल शुरू करें (Start Call)' : startButtonText)}</span>
               <svg
                 className="size-5 transition-transform duration-300 group-hover:translate-x-1.5"
                 fill="none"
@@ -381,7 +390,7 @@ export const WelcomeView = ({
       {/* Footer Branding */}
       <div className="z-10 mt-6 text-center font-mono text-[11px] text-slate-400 space-y-0.5">
         <p className="font-semibold text-slate-300">
-          #VoiceForBharat • 10 Days of Voice Challenge (Day 4: Agent Memory &amp; SQLite Database)
+          #VoiceForBharat • 10 Days of Voice Challenge (Day 5: Real Domain Tools, Multi-Subject &amp; Language Learning)
         </p>
         <p>
           Built with{' '}
