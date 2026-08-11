@@ -41,28 +41,28 @@ export function AgentChatTranscript({
               </span>
             </div>
 
-            <div className="flex items-center space-x-1.5 font-mono text-[10px] text-sky-300 bg-slate-900/80 px-2 py-0.5 rounded-full border border-sky-400/30">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>LIVE API &amp; MEMORY CHAINING ACTIVE</span>
+            <div className="flex items-center space-x-1.5 font-mono text-[10px] text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-400/40">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <span>📞 OUTBOUND SIP &amp; RETRY ENGINE ACTIVE</span>
             </div>
           </div>
 
-          {/* Day 5 Multi-Subject & Language Learning Pills */}
+          {/* Day 6 Telephony & Subject Learning Pills */}
           <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono">
             <span className="rounded-md bg-amber-500/15 border border-amber-400/30 px-2 py-0.5 text-amber-200">
-              📐 Math &amp; Physics
+              📞 Outbound Practice Call
             </span>
             <span className="rounded-md bg-emerald-500/15 border border-emerald-400/30 px-2 py-0.5 text-emerald-200">
-              🔬 Science &amp; Chemistry
-            </span>
-            <span className="rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-0.5 text-cyan-200">
-              💻 Coding &amp; CS
-            </span>
-            <span className="rounded-md bg-purple-500/15 border border-purple-400/30 px-2 py-0.5 text-purple-200">
-              🇮🇳 Hindi &amp; Sanskrit
+              🗣️ 2-Sentence Opening Script
             </span>
             <span className="rounded-md bg-rose-500/15 border border-rose-400/30 px-2 py-0.5 text-rose-200">
-              🌐 Tamil &amp; Languages
+              🛑 Opt-Out Supported
+            </span>
+            <span className="rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-0.5 text-cyan-200">
+              📐 NCERT Math &amp; Science
+            </span>
+            <span className="rounded-md bg-purple-500/15 border border-purple-400/30 px-2 py-0.5 text-purple-200">
+              🇮🇳 Hindi &amp; English
             </span>
           </div>
         </div>

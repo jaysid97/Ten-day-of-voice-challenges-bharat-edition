@@ -22,6 +22,7 @@ Welcome to the **10 Days of Voice AI Challenge (#VoiceForBharat)** repository fe
 | **Day 3** | Smart Classroom UI & 5 States | **Shiksha AI** | Human character avatar, 5 Agent States, Mic unblock modal, EN/Hindi toggle | ✅ Completed |
 | **Day 4** | Persistent Memory & Consent | **Shiksha AI** | SQLite database (`agent_memory.db`), learner facts, returning caller recognition, explicit consent rule | ✅ Completed |
 | **Day 5** | Domain Tools & Multi-Subject Engine | **Shiksha AI** | [DAY5_GUIDE.md](./DAY5_GUIDE.md): Live Educational API, multi-subject & language learning, Day 4 tool chaining, graceful out-loud fallbacks | ✅ Completed |
+| **Day 6** | Outbound Calls & Telephony | **Shiksha AI** | [DAY6_GUIDE.md](./DAY6_GUIDE.md): LiveKit SIP/Twilio outbound dispatch, 2-sentence opening script (Who, Why, Opt-Out), SQLite call log, outcome & retry rules | ✅ Completed |
 
 ---
 
@@ -29,24 +30,26 @@ Welcome to the **10 Days of Voice AI Challenge (#VoiceForBharat)** repository fe
 
 ```mermaid
 flowchart TD
-    User[🎙️ Learner Speaks] -->|Audio Stream| STT[Deepgram STT Nova-3 Multi]
+    User[🎙️ Learner / Outbound Caller] -->|Audio Stream / SIP| STT[Deepgram STT Nova-3 Multi]
     STT -->|Text Transcript| LLM[Google Gemini LLM]
     
-    subgraph Memory & Domain Tools Layer
-        LLM <-->|DB Lookup / Save / Forget| SQLite[(SQLite DB: agent_memory.db)]
+    subgraph Memory, Outbound & Domain Tools Layer
+        LLM <-->|DB Lookup / Save / Opt-Out| SQLite[(SQLite DB: agent_memory.db)]
+        LLM <-->|Outbound Dispatch / Retry Engine| OutboundScript[src/outbound_call.py]
         LLM <-->|Live Concept Fetch| WikiAPI[Wikipedia Educational REST API]
         LLM <-->|Live Dictionary Lookup| DictAPI[Free Dictionary REST API]
         WikiAPI -->|Timeout / Fallback| OfflineNCERT[Offline NCERT Curriculum Dataset]
     end
     
-    LLM -->|Spoken Text Response| TTS[Murf Falcon Streaming TTS]
-    TTS -->|High-Quality Audio| Transport[LiveKit Agent WebRTC Transport]
+    LLM -->|Mandated 2-Sentence Opening / Spoken Response| TTS[Murf Falcon Streaming TTS]
+    TTS -->|High-Quality Audio| Transport[LiveKit Agent WebRTC / SIP Transport]
     Transport -->|Audio Output| Speaker[🔊 Learner Hears Shiksha AI]
 
     style User fill:#1E293B,stroke:#38BDF8,color:#fff
     style STT fill:#064E3B,stroke:#10B981,color:#fff
     style LLM fill:#1E1B4B,stroke:#818CF8,color:#fff
     style SQLite fill:#78350F,stroke:#F59E0B,color:#fff
+    style OutboundScript fill:#831843,stroke:#F43F5E,color:#fff
     style WikiAPI fill:#0284C7,stroke:#38BDF8,color:#fff
     style DictAPI fill:#4C1D95,stroke:#C084FC,color:#fff
     style OfflineNCERT fill:#881337,stroke:#F43F5E,color:#fff
@@ -79,6 +82,24 @@ flowchart TD
   ./start_app.sh
   ```
 Open **`http://localhost:3000`** in your browser!
+
+---
+
+## 🌟 Key Features Highlighted by Day
+
+### 📞 Day 6 Highlight: Make Outbound Calls & Telephony Integration
+- **Outbound Use Case**: Scheduled Daily NCERT Practice Call for Learning & Literacy track (Science, Math, Spoken English).
+- **Mandated 2-Sentence Opening Script (Step 4)**:
+  1. *Who is calling & Why*: *"नमस्ते Ramesh जी! मैं शिक्षा AI बोल रहा हूँ, आपकी डेली 5-मिनट NCERT साइंस प्रैक्टिस कॉल के लिए।"*
+  2. *How to Opt Out*: *"अगर आप ये कॉल्स बंद करना चाहते हैं, तो बस 'स्टॉप' या 'कॉल्स बंद करो' बोल दें।"*
+  3. *Value Delivery*: *"आज हम NCERT Class 10 Biology Photosynthesis रिवाइज करेंगे। क्या आप शुरू करने के लिए तैयार हैं?"*
+- **Telephony & Dispatcher Script (`src/outbound_call.py`)**: LiveKit SIP API and Twilio integration launcher with CLI parameters (`--to`, `--name`, `--topic`, `--outcome`).
+- **Advanced Outcome Handling & Retry Rules**:
+  - `ANSWERED`: Completed interaction.
+  - `NO_ANSWER`: Schedules Retry 1 after 15 minutes (Max 3 retries).
+  - `BUSY`: Schedules Retry 1 after 5 minutes (Max 3 retries).
+  - `VOICEMAIL`: Drops spoken audio message drop ("This is Shiksha AI with your practice call..."), then hangs up.
+  - `OPT_OUT`: Persists opt-out preference to SQLite database `agent_memory.db` (`opt_out = 1`) and blocks future dispatches.
 
 ---
 

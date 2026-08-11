@@ -16,9 +16,57 @@ export const WelcomeView = ({
   hasEndedCall = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'day5tools' | 'states' | 'guardrails'>('day5tools');
+  const [activeTab, setActiveTab] = useState<'day6outbound' | 'day5tools' | 'overview' | 'states' | 'guardrails'>('day6outbound');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
+
+  const day6OutboundScenarios = [
+    {
+      scene: 'Scenario 1: Standard Outbound Call (ANSWERED)',
+      title: 'Daily Practice Call with Mandated 2-Sentence Opening',
+      prompt: 'Call Target: Ramesh (+91 98765 43210) | Topic: NCERT Class 10 Photosynthesis',
+      expectedOutcome: 'Agent connects, delivers mandatory opening (Who, Why, Opt-out) in first 2 sentences, and conducts practice session.',
+      userConsent: 'Mandated Opening Delivered',
+      type: 'Outbound Answered',
+      color: 'from-amber-500/20 to-emerald-500/10 border-amber-500/40 text-amber-300',
+    },
+    {
+      scene: 'Scenario 2: Immediate Opt-Out Request',
+      title: 'Caller says "Stop Calls" or "Opt Out"',
+      prompt: '"शिक्षा AI, मेरी डेली कॉल्स बंद कर दो (Stop practice calls)"',
+      expectedOutcome: 'Agent immediately calls opt_out_learner tool, confirms opt-out in DB, and ends session cleanly.',
+      userConsent: 'Opt-Out Persisted to DB',
+      type: 'Opt-Out Handled',
+      color: 'from-rose-500/20 to-red-500/10 border-rose-500/40 text-rose-300',
+    },
+    {
+      scene: 'Scenario 3: No Answer (30s Ring Timeout)',
+      title: 'Call Unanswered -> 15m Retry Rule',
+      prompt: 'Simulated Outcome: NO_ANSWER',
+      expectedOutcome: 'System logs NO_ANSWER in SQLite database and schedules Retry 1 after 15 minutes (Max 3 retries).',
+      userConsent: 'Retry Engine Active (15m)',
+      type: 'Outcome Handling',
+      color: 'from-sky-500/20 to-indigo-500/10 border-sky-500/40 text-sky-300',
+    },
+    {
+      scene: 'Scenario 4: Phone Busy / Declined',
+      title: 'Call Busy -> 5m Retry Rule',
+      prompt: 'Simulated Outcome: BUSY',
+      expectedOutcome: 'System logs BUSY outcome in SQLite database and schedules Retry 1 after 5 minutes (Max 3 retries).',
+      userConsent: 'Retry Engine Active (5m)',
+      type: 'Outcome Handling',
+      color: 'from-yellow-500/20 to-amber-500/10 border-yellow-500/40 text-yellow-300',
+    },
+    {
+      scene: 'Scenario 5: Voicemail Answering Machine',
+      title: 'Voicemail Detected -> Spoken Message Drop',
+      prompt: 'Simulated Outcome: VOICEMAIL',
+      expectedOutcome: 'Agent drops concise spoken voicemail message ("This is Shiksha AI with your daily practice reminder..."), then hangs up.',
+      userConsent: 'Voicemail Audio Drop',
+      type: 'Message Drop',
+      color: 'from-purple-500/20 to-pink-500/10 border-purple-500/40 text-purple-300',
+    },
+  ];
 
   const day5ToolsDemoScript = [
     {
@@ -38,24 +86,6 @@ export const WelcomeView = ({
       userConsent: 'Multi-Language Engine',
       type: 'Language Tool',
       color: 'from-purple-500/20 to-indigo-500/10 border-purple-500/30 text-purple-300',
-    },
-    {
-      scene: 'Scenario 3: Memory Tool Chaining',
-      title: 'Day 4 Memory + Day 5 Tool Chaining',
-      prompt: 'Give me a practice exercise on Light.',
-      expectedOutcome: 'Agent auto-retrieves saved grade level (Class 10 Science) from Day 4 SQLite memory and fetches Class 10 Light exercise without re-asking.',
-      userConsent: 'Auto-Chained from Memory',
-      type: 'Tool Chaining',
-      color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-300',
-    },
-    {
-      scene: 'Scenario 4: Graceful Out-Loud Fallback',
-      title: 'API Timeout / Offline Network Handling',
-      prompt: '(Offline / Network server unreachable test)',
-      expectedOutcome: 'Agent explicitly states out loud: "The live server timed out...", then seamlessly presents offline NCERT curriculum data.',
-      userConsent: 'Out-Loud Fallback Active',
-      type: 'Graceful Fallback',
-      color: 'from-rose-500/20 to-amber-500/10 border-rose-500/30 text-rose-300',
     },
   ];
 
@@ -122,7 +152,7 @@ export const WelcomeView = ({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
             </span>
-            <span>🇮🇳 DAY 5 • REAL DOMAIN TOOLS &amp; MULTI-SUBJECT LEARNING</span>
+            <span>📞 DAY 6 • MAKE OUTBOUND CALLS &amp; TELEPHONY (SIP/TWILIO)</span>
           </div>
 
           <button
@@ -142,7 +172,7 @@ export const WelcomeView = ({
             </div>
             <p className="mt-0.5 text-[11px] text-slate-300">
               {lang === 'hi'
-                ? 'आपका वॉइस सेशन समाप्त हो गया है। नया सेशन शुरू करने के लिए नीचे बटन दबाएं।'
+                ? 'आपका आउटबाउंड/इनबाउंड वॉइस सेशन समाप्त हो गया है। नया सेशन शुरू करने के लिए नीचे बटन दबाएं।'
                 : 'Your voice session with Shiksha AI has concluded. Click below to start a new session.'}
             </p>
           </div>
@@ -161,39 +191,49 @@ export const WelcomeView = ({
           </span>
         </h1>
 
-        {/* Day 5 Ready Badge */}
-        <div className="mb-2 inline-flex items-center space-x-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-3 py-0.5 text-[11px] font-extrabold text-emerald-300 shadow-md">
-          <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+        {/* Day 6 Ready Badge */}
+        <div className="mb-2 inline-flex items-center space-x-1.5 rounded-full border border-amber-500/40 bg-amber-950/70 px-3 py-0.5 text-[11px] font-extrabold text-amber-300 shadow-md">
+          <span className="size-2 rounded-full bg-amber-400 animate-pulse" />
           <span>
             {lang === 'hi'
-              ? '🟢 डे 5: रियल डोमेन टूल्स एवं बहु-विषय भाषा शिक्षण एक्टिव'
-              : '🟢 Day 5: Real Domain Tools, Multi-Subject & Language Learning Active'}
+              ? '📞 डे 6: आउटबाउंड टेलीफोनी, अनिवार्य 2-वाक्य ओपनिंग एवं ऑप्ट-आउट सक्रिय'
+              : '📞 Day 6: Outbound Calls, Mandated 2-Sentence Opening & Opt-Out Active'}
           </span>
         </div>
 
         <p className="mb-1.5 max-w-xl text-base font-medium leading-snug text-amber-200/90 sm:text-xl">
           {lang === 'hi'
-            ? 'भारत के लिए रियल-टाइम टूल्स एवं बहु-विषय Human AI वॉइस ट्यूटर'
-            : 'Human-Type AI Voice Tutor with Real-Time Domain Tools & Memory'}
+            ? 'डेली NCERT अभ्यास के लिए आउटबाउंड कॉल्स (Learning & Literacy Track)'
+            : 'Outbound Automated Practice Calls for Daily Learning & Literacy'}
         </p>
 
         <p className="mb-4 max-w-lg text-xs font-normal leading-relaxed text-slate-300 sm:text-sm">
           {lang === 'hi'
-            ? 'शिक्षा AI अब रियल-टाइम API टूल्स के माध्यम से किसी भी विषय (गणित, विज्ञान, कोडिंग) और भाषा (हिंदी, संस्कृत, तमिल, फ़्रेंच) का अभ्यास कराती है।'
-            : 'Shiksha AI now fetches real educational data & practice problems across ALL subjects and languages using live API tools with Day 4 memory chaining and graceful out-loud fallbacks.'}
+            ? 'शिक्षा AI अब विद्यार्थियों को डेली NCERT अभ्यास के लिए आउटबाउंड कॉल करती है। पहली दो पंक्तियों में नाम, कारण और कॉल्स बंद करने का तरीका (Opt-out) बताती है।'
+            : 'Shiksha AI makes outbound practice calls to learners. Opening in 2 sentences with Who is calling, Why, and How to Opt-Out with outcome handling & retry rules.'}
         </p>
 
         {/* Tab Navigation Controls */}
         <div className="mb-3 flex flex-wrap items-center justify-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 text-xs font-semibold backdrop-blur-md">
           <button
-            onClick={() => setActiveTab('day5tools')}
+            onClick={() => setActiveTab('day6outbound')}
             className={`rounded-lg px-3 py-1.5 transition-all ${
-              activeTab === 'day5tools'
+              activeTab === 'day6outbound'
                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 font-bold text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            🛠️ Day 5 Tools &amp; Test Scenarios
+            📞 Day 6 Outbound Calls
+          </button>
+          <button
+            onClick={() => setActiveTab('day5tools')}
+            className={`rounded-lg px-3 py-1.5 transition-all ${
+              activeTab === 'day5tools'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 font-bold text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            🛠️ Day 5 Domain Tools
           </button>
           <button
             onClick={() => setActiveTab('overview')}
@@ -205,35 +245,38 @@ export const WelcomeView = ({
           >
             🌟 Overview
           </button>
-          <button
-            onClick={() => setActiveTab('states')}
-            className={`rounded-lg px-3 py-1.5 transition-all ${
-              activeTab === 'states'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 font-bold text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            🎯 5 Agent States
-          </button>
-          <button
-            onClick={() => setActiveTab('guardrails')}
-            className={`rounded-lg px-3 py-1.5 transition-all ${
-              activeTab === 'guardrails'
-                ? 'bg-gradient-to-r from-rose-500 to-amber-500 font-bold text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            🛡️ Guardrails &amp; Consent
-          </button>
         </div>
 
-        {/* TAB 1: DAY 5 TOOLS & TEST SCENARIOS */}
-        {activeTab === 'day5tools' && (
-          <div className="mb-4 w-full space-y-2 text-left max-h-[220px] overflow-y-auto pr-1">
+        {/* TAB: DAY 6 OUTBOUND CALLS */}
+        {activeTab === 'day6outbound' && (
+          <div className="mb-4 w-full space-y-2 text-left max-h-[240px] overflow-y-auto pr-1">
+            {/* Opening Script Box */}
+            <div className="rounded-xl border border-amber-500/40 bg-amber-950/40 p-3 backdrop-blur-md">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="font-mono text-xs font-extrabold text-amber-300">
+                  🗣️ MANDATED 2-SENTENCE OUTBOUND OPENING SCRIPT (STEP 4)
+                </span>
+                <span className="rounded bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] text-amber-200">
+                  Step 4 Compliant
+                </span>
+              </div>
+              <div className="space-y-1 font-mono text-[11px] leading-relaxed text-slate-200">
+                <p>
+                  <strong className="text-amber-300">1. Who &amp; Why:</strong> "नमस्ते Ramesh जी! मैं शिक्षा AI बोल रहा हूँ, आपकी डेली 5-मिनट NCERT साइंस प्रैक्टिस कॉल के लिए।"
+                </p>
+                <p>
+                  <strong className="text-amber-300">2. How to Stop (Opt-Out):</strong> "अगर आप ये कॉल्स बंद करना चाहते हैं, तो बस 'स्टॉप' या 'कॉल्स बंद करो' बोल दें।"
+                </p>
+                <p>
+                  <strong className="text-emerald-300">3. Value Delivery:</strong> "आज हम NCERT Class 10 Science Photosynthesis रिवाइज करेंगे। क्या आप शुरू करने के लिए तैयार हैं?"
+                </p>
+              </div>
+            </div>
+
             <p className="mb-1 text-center font-mono text-[11px] text-amber-300">
-              💡 Use these test scenarios to record your Day 5 video demonstration!
+              💡 Outbound Call Scenarios &amp; Outcome Handling Matrix:
             </p>
-            {day5ToolsDemoScript.map((item, idx) => (
+            {day6OutboundScenarios.map((item, idx) => (
               <div
                 key={idx}
                 className={`group relative rounded-xl border bg-gradient-to-r ${item.color} p-3 backdrop-blur-md transition-all`}
@@ -247,21 +290,14 @@ export const WelcomeView = ({
                 <p className="text-xs font-medium leading-relaxed text-slate-100 font-mono mb-0.5">
                   "{item.prompt}"
                 </p>
-                <p className="text-[11px] text-slate-300 font-sans italic mb-1.5">
+                <p className="text-[11px] text-slate-300 font-sans italic mb-1">
                   ✨ Expected: {item.expectedOutcome}
                 </p>
-                {item.prompt && !item.prompt.startsWith('(') && (
-                  <button
-                    onClick={() => copyToClipboard(item.prompt, idx)}
-                    className="inline-flex items-center space-x-1 rounded-md bg-slate-950/80 px-2 py-0.5 font-mono text-[10px] font-semibold text-amber-300 transition-all hover:bg-amber-500 hover:text-slate-950"
-                  >
-                    <span>{copiedIndex === idx ? '✓ Copied!' : '📋 Copy Prompt'}</span>
-                  </button>
-                )}
               </div>
             ))}
           </div>
         )}
+
 
         {/* TAB 2: OVERVIEW GRID */}
         {activeTab === 'overview' && (
@@ -368,7 +404,7 @@ export const WelcomeView = ({
           >
             <span className="relative z-10 flex items-center justify-center space-x-2.5">
               <span className="size-2.5 animate-ping rounded-full bg-slate-950" />
-              <span>{hasEndedCall ? (lang === 'hi' ? 'फिर से शुरू करें (Start Session)' : 'Start New Session (Test Day 5 Tools)') : (lang === 'hi' ? 'कॉल शुरू करें (Start Call)' : startButtonText)}</span>
+              <span>{hasEndedCall ? (lang === 'hi' ? 'फिर से शुरू करें (Start Session)' : 'Start Outbound Session (Test Day 6 Calls)') : (lang === 'hi' ? 'कॉल शुरू करें (Start Call)' : startButtonText)}</span>
               <svg
                 className="size-5 transition-transform duration-300 group-hover:translate-x-1.5"
                 fill="none"

@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from datetime import datetime
 
 # Force UTF-8 encoding on Windows console streams to prevent Devanagari logging crashes
 if hasattr(sys.stdout, "reconfigure"):
@@ -90,11 +91,7 @@ STYLE:
 
 @llm.function_tool
 def lookup_caller(user_id_or_name: str) -> str:
-    """Look up a caller's profile and learning history from the SQLite database.
-
-    Args:
-        user_id_or_name: The user's name or identifier to search for (e.g. 'Ramesh').
-    """
+    """Look up a caller's profile and learning history from the SQLite database."""
     profile = get_user_profile(user_id_or_name)
     if not profile:
         return f"No existing profile found for '{user_id_or_name}'. This is a new learner."
@@ -123,19 +120,7 @@ def save_caller_facts(
     struggles: str = "None",
     target_goal: str = "General Literacy",
 ) -> str:
-    """Save or update caller learning facts and profile in the database.
-
-    CRITICAL MANDATORY RULE: You MUST explicitly ask the caller for permission BEFORE invoking this tool.
-
-    Args:
-        user_id_or_name: Caller unique identifier or name (e.g., 'ramesh').
-        name: Caller's full name (e.g., 'Ramesh').
-        language_preference: Preferred language (e.g., 'Hindi', 'English', 'Hinglish').
-        current_level: Current learning/class level (e.g., 'Class 8 Math', 'Beginner Spoken English').
-        topics_covered: Recent topics studied (e.g., 'Fractions & Decimals', 'Photosynthesis').
-        struggles: Difficulties or repeated mistakes (e.g., 'Multiplying negative numbers', 'Pronunciation').
-        target_goal: Target objective (e.g., 'Pass CBSE exam', 'Speak fluent English').
-    """
+    """Save or update caller learning facts and profile in the database."""
     clean_id = (user_id_or_name or "learner").strip()
     clean_name = name if name and name != "Learner" else clean_id.capitalize()
     facts = {
@@ -157,11 +142,7 @@ def save_caller_facts(
 
 @llm.function_tool
 def forget_caller(user_id_or_name: str) -> str:
-    """Delete and wipe all saved records for the caller from the database.
-
-    Args:
-        user_id_or_name: Name or ID of caller to delete.
-    """
+    """Delete and wipe all saved records for the caller from the database."""
     deleted = delete_user_profile(user_id_or_name)
     if deleted:
         return f"Caller record for '{user_id_or_name}' has been permanently wiped from the database."
@@ -170,14 +151,7 @@ def forget_caller(user_id_or_name: str) -> str:
 
 @llm.function_tool
 def opt_out_learner(user_id_or_name: str, reason: str = "Caller requested opt-out during call") -> str:
-    """Opt out the caller from receiving any future outbound study practice calls.
-
-    Call this tool when the user says 'stop calls', 'opt out', 'कॉल्स बंद करो', 'don't call me', or 'unsubscribe'.
-
-    Args:
-        user_id_or_name: Name or ID of caller requesting opt-out.
-        reason: Reason for opting out.
-    """
+    """Opt out the caller from receiving any future outbound study practice calls."""
     success = set_learner_opt_out(user_id_or_name, opt_out=True, reason=reason)
     if success:
         return f"Successfully opted out '{user_id_or_name}'. No future outbound calls will be placed to this learner."
@@ -217,10 +191,8 @@ async def my_agent(ctx: JobContext):
         "room": ctx.room.name,
     }
 
-    # Initialize SQLite DB with Day 6 Schema
     init_db()
 
-    # Determine if session is an outbound call or SIP call
     import json
     metadata_obj = {}
     if ctx.room.metadata:
@@ -240,7 +212,6 @@ async def my_agent(ctx: JobContext):
     topic = metadata_obj.get("topic", "NCERT Class 10 Science Photosynthesis")
     outcome_sim = metadata_obj.get("outcome_sim", "ANSWERED").upper()
 
-    # Set up voice AI pipeline using Murf Falcon, Gemini, Deepgram Multilingual, LiveKit turn detector
     session = AgentSession(
         stt=deepgram.STT(
             model="nova-3",
@@ -280,11 +251,9 @@ async def my_agent(ctx: JobContext):
 
     await ctx.connect()
 
-    # Day 6 Outbound Call Logic & Mandatory Opening Script
     if is_outbound:
         call_id = f"call_{int(datetime.now().timestamp())}"
         
-        # Check if learner has opted out
         if is_learner_opted_out(user_id):
             logger.info(f"Outbound call blocked for {user_id} — learner opted out.")
             log_outbound_call(call_id, user_id, phone_number, topic, "OPT_OUT", notes="Blocked by prior opt-out preference")
@@ -310,13 +279,9 @@ async def my_agent(ctx: JobContext):
             await session.say("Outbound call status: BUSY. Retry scheduled in 5 minutes.")
             return
 
-        # Default Outcome: ANSWERED (Day 6 Mandatory 2-Sentence Opening Script)
+        # Default Outcome: ANSWERED (Mandated 2-Sentence Opening Script)
         log_outbound_call(call_id, user_id, phone_number, topic, "ANSWERED", notes="Call connected & completed successfully")
         
-        # Mandatory Day 6 Opening Script:
-        # Sentence 1: Who is calling & Why
-        # Sentence 2: How to make it stop / Opt-Out
-        # Sentence 3: Value delivery / Daily practice prompt
         outbound_opening = (
             f"नमस्ते {learner_name} जी! मैं शिक्षा AI बोल रहा हूँ, आपकी डेली 5-मिनट NCERT प्रैक्टिस कॉल के लिए। "
             f"अगर आप ये कॉल्स बंद करना चाहते हैं, तो बस 'स्टॉप' या 'कॉल्स बंद करो' बोल दें। "
@@ -325,7 +290,6 @@ async def my_agent(ctx: JobContext):
         await session.say(outbound_opening)
 
     else:
-        # Standard Inbound Call Greeting
         if recent_profile:
             name = recent_profile.get("name", "Learner")
             facts = recent_profile.get("facts", {})
@@ -340,11 +304,6 @@ async def my_agent(ctx: JobContext):
                 "आप मुझसे हिंदी या इंग्लिश किसी भी भाषा में बात कर सकते हैं। आपका नाम क्या है और आज हम कौन सा टॉपिक स्टडी करें?"
             )
         await session.say(greeting)
-
-
-if __name__ == "__main__":
-    cli.run_app(server)
-
 
 
 if __name__ == "__main__":

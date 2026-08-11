@@ -95,12 +95,12 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="hidden items-center space-x-2 rounded-full border border-emerald-500/30 bg-emerald-950/50 px-3 py-1 text-xs font-medium text-emerald-400 sm:flex">
+              <div className="hidden items-center space-x-2 rounded-full border border-amber-500/40 bg-amber-950/60 px-3 py-1 text-xs font-medium text-amber-300 sm:flex">
                 <span className="relative flex size-2">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex size-2 rounded-full bg-amber-500"></span>
                 </span>
-                <span>REAL DOMAIN TOOLS • DAY 5</span>
+                <span>MAKE OUTBOUND CALLS • DAY 6</span>
               </div>
 
               <span className="hidden font-mono text-xs font-semibold text-slate-400 md:inline-block">
