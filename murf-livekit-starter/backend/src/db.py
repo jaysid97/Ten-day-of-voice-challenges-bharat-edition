@@ -49,8 +49,25 @@ def init_db(db_path: str = DB_PATH) -> None:
                 reason TEXT
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS human_help_requests (
+                ref_id TEXT PRIMARY KEY,
+                caller_name TEXT NOT NULL,
+                contact_info TEXT DEFAULT '+919876543210',
+                reason_category TEXT NOT NULL,
+                issue_description TEXT NOT NULL,
+                agent_checked TEXT NOT NULL,
+                urgency TEXT DEFAULT 'medium',
+                preferred_language TEXT DEFAULT 'Hindi',
+                preferred_contact_method TEXT DEFAULT 'Phone Call',
+                status TEXT DEFAULT 'OPEN',
+                timestamp TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                notes TEXT
+            )
+        """)
         conn.commit()
-    logger.info(f"Database initialized with Day 6 schema at {db_path}")
+    logger.info(f"Database initialized with Day 7 schema at {db_path}")
 
 
 def get_user_profile(user_id_or_name: str, db_path: str = DB_PATH) -> Optional[Dict[str, Any]]:
@@ -286,4 +303,179 @@ def get_outbound_history(user_id: Optional[str] = None, db_path: str = DB_PATH) 
             cursor.execute("SELECT * FROM outbound_calls ORDER BY timestamp DESC LIMIT 50")
         rows = cursor.fetchall()
         return [dict(r) for r in rows]
+
+
+# -----------------------------------------------------------------------------
+# Day 7: Human-in-the-Loop & Escalation Management
+# -----------------------------------------------------------------------------
+import re
+import random
+
+def sanitize_summary(text: str) -> str:
+    """Sanitize and strip sensitive private data (passwords, OTPs, PINs, bank accounts, Aadhaar) from human summaries."""
+    if not text:
+        return ""
+    
+    sanitized = text
+    # Scrub Passwords / Secrets
+    sanitized = re.sub(r'(?i)\b(password|passwd|pwd|pass)\b\s*[:=]?\s*\S+', r'\1: [REDACTED_SENSITIVE]', sanitized)
+    # Scrub OTPs
+    sanitized = re.sub(r'(?i)\b(otp|one time password)\b\s*[:=]?\s*\d{4,8}', r'OTP: [REDACTED_OTP]', sanitized)
+    # Scrub PINs
+    sanitized = re.sub(r'(?i)\b(pin|secret pin)\b\s*[:=]?\s*\d{4,6}', r'PIN: [REDACTED_PIN]', sanitized)
+    # Scrub Credit/Debit Card Numbers (16-digit numbers or spaced/dashed)
+    sanitized = re.sub(r'\b(?:\d[ -]*?){13,16}\b', '[REDACTED_CARD_NO]', sanitized)
+    # Scrub Aadhaar / Government IDs (12-digit numbers)
+    sanitized = re.sub(r'\b\d{4}[ -]?\d{4}[ -]?\d{4}\b', '[REDACTED_GOVT_ID]', sanitized)
+
+    return sanitized
+
+
+def save_human_help_request(
+    caller_name: str,
+    reason_category: str,
+    issue_description: str,
+    agent_checked: str,
+    contact_info: str = "+919876543210",
+    urgency: str = "medium",
+    preferred_language: str = "Hindi",
+    preferred_contact_method: str = "Phone Call",
+    user_consent_granted: bool = True,
+    notes: str = "",
+    db_path: str = DB_PATH,
+) -> Dict[str, Any]:
+    """Create or update a human help escalation request in SQLite database.
+
+    Enforces consent validation, PII scrubbing, duplicate prevention, and reference ID generation.
+    """
+    if not user_consent_granted:
+        raise ValueError("Consent required: Cannot create human help request without explicit caller permission.")
+
+    clean_name = (caller_name or "Learner").strip()
+    clean_urgency = (urgency or "medium").lower()
+    if clean_urgency not in ("low", "medium", "high", "emergency"):
+        clean_urgency = "medium"
+
+    clean_desc = sanitize_summary(issue_description)
+    clean_checked = sanitize_summary(agent_checked)
+    timestamp = datetime.now().isoformat()
+
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+
+        # Check for active open ticket for same caller & category to stop duplicate requests
+        cursor.execute(
+            """
+            SELECT * FROM human_help_requests 
+            WHERE LOWER(caller_name) = ? AND reason_category = ? AND status IN ('OPEN', 'IN_PROGRESS')
+            ORDER BY timestamp DESC LIMIT 1
+            """,
+            (clean_name.lower(), reason_category),
+        )
+        existing = cursor.fetchone()
+
+        if existing:
+            existing_row = dict(existing)
+            ref_id = existing_row["ref_id"]
+            updated_notes = f"{existing_row.get('notes', '')} | Appended update at {timestamp}: {clean_desc}".strip(" |")
+
+            # Higher urgency takes precedence
+            urgency_levels = {"low": 1, "medium": 2, "high": 3, "emergency": 4}
+            new_urgency = clean_urgency if urgency_levels.get(clean_urgency, 2) > urgency_levels.get(existing_row["urgency"], 2) else existing_row["urgency"]
+
+            cursor.execute(
+                """
+                UPDATE human_help_requests 
+                SET issue_description = ?, agent_checked = ?, urgency = ?, updated_at = ?, notes = ?
+                WHERE ref_id = ?
+                """,
+                (f"{existing_row['issue_description']} ; Additional: {clean_desc}", clean_checked, new_urgency, timestamp, updated_notes, ref_id),
+            )
+            conn.commit()
+            logger.info(f"Updated existing escalation request {ref_id} for {clean_name}")
+            return {
+                "ref_id": ref_id,
+                "is_duplicate": True,
+                "status": existing_row["status"],
+                "caller_name": clean_name,
+                "urgency": new_urgency,
+                "message": f"Updated existing open ticket {ref_id} for {clean_name}. Next step: Teacher follow-up pending.",
+            }
+
+        # Generate unique reference ID (e.g., REF-84920)
+        random_num = random.randint(10000, 99999)
+        ref_id = f"REF-{random_num}"
+
+        cursor.execute(
+            """
+            INSERT INTO human_help_requests (
+                ref_id, caller_name, contact_info, reason_category, issue_description,
+                agent_checked, urgency, preferred_language, preferred_contact_method,
+                status, timestamp, updated_at, notes
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?)
+            """,
+            (
+                ref_id, clean_name, contact_info, reason_category, clean_desc,
+                clean_checked, clean_urgency, preferred_language, preferred_contact_method,
+                timestamp, timestamp, notes,
+            ),
+        )
+        conn.commit()
+
+    logger.info(f"Created new human help escalation request {ref_id} for {clean_name}")
+    return {
+        "ref_id": ref_id,
+        "is_duplicate": False,
+        "status": "OPEN",
+        "caller_name": clean_name,
+        "urgency": clean_urgency,
+        "message": f"Help request {ref_id} successfully registered. Senior teacher will follow up via {preferred_contact_method} within 2-4 hours.",
+    }
+
+
+def get_human_help_requests(
+    status: Optional[str] = None,
+    ref_id: Optional[str] = None,
+    db_path: str = DB_PATH,
+) -> list[Dict[str, Any]]:
+    """Retrieve human help requests filtered by status or ref_id."""
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+        if ref_id:
+            cursor.execute("SELECT * FROM human_help_requests WHERE ref_id = ?", (ref_id.strip().upper(),))
+        elif status:
+            cursor.execute("SELECT * FROM human_help_requests WHERE status = ? ORDER BY timestamp DESC", (status.strip().upper(),))
+        else:
+            cursor.execute("SELECT * FROM human_help_requests ORDER BY timestamp DESC LIMIT 50")
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+def update_human_help_status(
+    ref_id: str,
+    new_status: str,
+    resolution_notes: str = "",
+    db_path: str = DB_PATH,
+) -> bool:
+    """Update human help ticket status (OPEN, IN_PROGRESS, RESOLVED)."""
+    clean_status = new_status.strip().upper()
+    if clean_status not in ("OPEN", "IN_PROGRESS", "RESOLVED"):
+        return False
+    timestamp = datetime.now().isoformat()
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE human_help_requests 
+            SET status = ?, updated_at = ?, notes = notes || ' | Resolution Note: ' || ?
+            WHERE ref_id = ?
+            """,
+            (clean_status, timestamp, resolution_notes, ref_id.strip().upper()),
+        )
+        updated = cursor.rowcount > 0
+        conn.commit()
+    logger.info(f"Updated request {ref_id} status to {clean_status}: {updated}")
+    return updated
+
 

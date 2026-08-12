@@ -23,6 +23,7 @@ Welcome to the **10 Days of Voice AI Challenge (#VoiceForBharat)** repository fe
 | **Day 4** | Persistent Memory & Consent | **Shiksha AI** | SQLite database (`agent_memory.db`), learner facts, returning caller recognition, explicit consent rule | ✅ Completed |
 | **Day 5** | Domain Tools & Multi-Subject Engine | **Shiksha AI** | [DAY5_GUIDE.md](./DAY5_GUIDE.md): Live Educational API, multi-subject & language learning, Day 4 tool chaining, graceful out-loud fallbacks | ✅ Completed |
 | **Day 6** | Outbound Calls & Telephony | **Shiksha AI** | [DAY6_GUIDE.md](./DAY6_GUIDE.md): LiveKit SIP/Twilio outbound dispatch, 2-sentence opening script (Who, Why, Opt-Out), SQLite call log, outcome & retry rules | ✅ Completed |
+| **Day 7** | Know When to Ask for Human Help | **Shiksha AI** | [DAY7_GUIDE.md](./DAY7_GUIDE.md): Human escalation tool (`create_escalation`), hard consent rule, PII scrubbing, SQLite & Discord Webhook tickets, live admin dashboard | ✅ Completed |
 
 ---
 
@@ -101,6 +102,26 @@ Open **`http://localhost:3000`** in your browser!
   - `VOICEMAIL`: Drops spoken audio message drop ("This is Shiksha AI with your practice call..."), then hangs up.
   - `OPT_OUT`: Persists opt-out preference to SQLite database `agent_memory.db` (`opt_out = 1`) and blocks future dispatches.
 
+### 🚨 Day 7 Highlight: Know When to Ask for Human Help & Escalations
+- **Step 1 (2 Escalation Reasons)**:
+  1. *Frustrated Learner / Teacher Request*: Learner is upset, stuck repeatedly on a concept (calculus/fractions), or explicitly asks to talk to a human teacher.
+  2. *Exam, Certificate & Administrative Policy Dispute*: Official CBSE hall ticket errors, marks re-checking disputes, or fee/scholarship issues requiring human authority.
+- **Step 2 & 3 (Human Help Tool & PII Sanitization)**:
+  - `@llm.function_tool create_escalation(...)` in `src/tools.py`.
+  - Automatic PII scrubbing (`sanitize_summary` in `src/db.py`) redacts passwords, OTPs, PINs, bank accounts, and Aadhaar numbers before saving/dispatching.
+- **Step 4 (Hard Consent Rule)**:
+  - Agent explicitly asks for permission (*"I can submit a support ticket to a senior teacher with your name, topic, and contact number. Do I have your permission to share these details and create the ticket?"*) BEFORE invoking `create_escalation`. If user denies consent, ticket creation is aborted.
+- **Step 5 (Send Request Somewhere Real)**:
+  - **SQLite Database**: Table `human_help_requests` stores all structured tickets with reference IDs.
+  - **Discord Webhook**: Sends formatted markdown Embed Cards to Discord (`DISCORD_WEBHOOK_URL`) with urgency colors.
+  - **Next.js Admin Dashboard**: Live escalation requests center tab with real-time status filtering (`ALL`, `OPEN`, `IN_PROGRESS`, `RESOLVED`) and single-click action buttons.
+- **Step 6 (Clear Next Step & Reference ID)**:
+  - Agent speaks generated Reference ID aloud (e.g., `REF-84920`) and states honest timeline: *"A senior teacher will review your request and contact you within 2 to 4 hours."*
+- **Advanced Features**:
+  - Duplicate request prevention (updates existing open ticket for identical caller/category).
+  - Urgency level classification (`low`, `medium`, `high`, `emergency`).
+  - Interactive status update lifecycle controls (`OPEN` -> `IN_PROGRESS` -> `RESOLVED`).
+
 ---
 
 ## 🌟 Key Features Highlighted by Day
@@ -150,6 +171,8 @@ ten-day-voice-agent-bharat-edition/
 ├── DAY3_GUIDE.md            # Day 3 Frontend & 5 Agent States Guide
 ├── DAY4_GUIDE.md            # Day 4 SQLite Memory & Consent Guide
 ├── DAY5_GUIDE.md            # Day 5 Real Domain Tools & Multi-Subject Guide
+├── DAY6_GUIDE.md            # Day 6 Outbound Calls & Telephony Guide
+├── DAY7_GUIDE.md            # Day 7 Know When to Ask for Human Help Guide
 ├── README.md                # Main Repository Readme
 ├── start_app.ps1            # Windows Application Starter Script
 ├── start_app.sh             # Linux/macOS Application Starter Script
@@ -159,16 +182,19 @@ ten-day-voice-agent-bharat-edition/
     ├── backend/             # LiveKit Python Agent Backend
     │   ├── src/
     │   │   ├── agent.py     # Main Shiksha AI Agent Logic & Pipeline
-    │   │   ├── tools.py     # Day 5 Real Domain Tools & Language Engine
-    │   │   └── db.py        # Day 4 SQLite Memory Database Handler
+    │   │   ├── tools.py     # Day 5 Tools, Day 6 Opt-Out, Day 7 Human Escalations
+    │   │   ├── db.py        # SQLite Memory, Outbound Logs & Escalation Requests DB
+    │   │   └── outbound_call.py # Day 6 SIP/Twilio Outbound Dispatcher Script
     │   └── tests/
-    │       └── test_day5_tools.py # Pytest Unit Suite for Day 5 Tools
+    │       ├── test_day5_tools.py      # Pytest Suite for Day 5 Domain Tools
+    │       ├── test_day6_outbound.py   # Pytest Suite for Day 6 Outbound Telephony
+    │       └── test_day7_escalation.py # Pytest Suite for Day 7 Human Escalations
     └── frontend/            # Next.js 15 Smart Classroom Web App
-        ├── app/             # App Router Pages & Token Endpoints
+        ├── app/             # App Router Pages, Token & Escalation API Endpoints
         └── components/
             ├── app/
             │   ├── human-ai-tutor.tsx  # Interactive Character Avatar
-            │   └── welcome-view.tsx    # Day 5 Welcome Screen & Scenarios
+            │   └── welcome-view.tsx    # Day 7 Escalation Desk & Live Admin Dashboard
             └── agents-ui/
                 └── agent-chat-transcript.tsx # Smart Classroom HUD Layout
 ```
@@ -177,10 +203,10 @@ ten-day-voice-agent-bharat-edition/
 
 ## 🧪 Running Automated Unit Tests
 
-To run the Day 5 automated unit test suite:
+To run the automated pytest unit test suites for Day 5, Day 6, and Day 7:
 ```powershell
-cd murf-livekit-starter/backend
-uv run pytest tests/test_day5_tools.py
+cd backend
+& "d:\ten day voice agent bharat edition\backend\.venv\Scripts\python.exe" -m pytest tests/test_day7_escalation.py tests/test_day6_outbound.py tests/test_day5_tools.py
 ```
 
 ---

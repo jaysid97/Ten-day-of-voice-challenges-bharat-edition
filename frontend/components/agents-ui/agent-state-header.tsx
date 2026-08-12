@@ -55,8 +55,8 @@ export function AgentStateHeader({
           <div>
             <h2 className="flex items-center gap-2 text-sm font-black tracking-tight text-white sm:text-base">
               <span>Shiksha AI</span>
-              <span className="rounded-md border border-amber-500/40 bg-amber-950/60 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-300">
-                DAY 6 • MAKE OUTBOUND CALLS &amp; TELEPHONY
+              <span className="rounded-md border border-rose-500/40 bg-rose-950/60 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-rose-300">
+                DAY 7 • HUMAN-IN-THE-LOOP &amp; ESCALATION
               </span>
             </h2>
             <p className="text-[11px] font-medium text-slate-400">

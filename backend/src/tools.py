@@ -1,10 +1,11 @@
 import datetime
 import json
 import logging
+import os
 import urllib.request
 import urllib.parse
 from livekit.agents import llm
-from db import get_most_recent_user_profile, get_user_profile
+from db import get_most_recent_user_profile, get_user_profile, save_human_help_request
 
 logger = logging.getLogger("agent.tools")
 
@@ -405,3 +406,153 @@ def lookup_word_meaning_and_origin(word: str) -> str:
         f"Definition: {clean_word.capitalize()} is an important key term used in your school lessons.\n"
         f"Note for Agent: State out loud that the live dictionary timed out, and give a simple definition."
     )
+
+
+# -----------------------------------------------------------------------------
+# Day 7: Human-in-the-Loop Escalation Tool & Discord Webhook Integration
+# -----------------------------------------------------------------------------
+
+def send_discord_webhook(ticket_data: dict) -> bool:
+    """Send formatted markdown embed card of human help request to Discord Webhook if configured."""
+    webhook_url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+    if not webhook_url:
+        logger.info("No DISCORD_WEBHOOK_URL configured. Skipping Discord notification.")
+        return False
+
+    ref_id = ticket_data.get("ref_id", "REF-UNKNOWN")
+    caller_name = ticket_data.get("caller_name", "Learner")
+    urgency = str(ticket_data.get("urgency", "medium")).upper()
+    
+    color_map = {
+        "EMERGENCY": 15158332,
+        "HIGH": 15105570,
+        "MEDIUM": 3447003,
+        "LOW": 3066993,
+    }
+    embed_color = color_map.get(urgency, 3447003)
+
+    payload = {
+        "username": "Shiksha AI Escalation Desk",
+        "avatar_url": "https://cdn-icons-png.flaticon.com/512/3429/3429149.png",
+        "embeds": [
+            {
+                "title": f"Human Help Request: {ref_id} [{urgency}]",
+                "description": f"Learner {caller_name} requires human teacher assistance.",
+                "color": embed_color,
+                "fields": [
+                    {"name": "Caller Name", "value": caller_name, "inline": True},
+                    {"name": "Contact / Language", "value": f"{ticket_data.get('contact_info', 'N/A')} ({ticket_data.get('preferred_language', 'Hindi')})", "inline": True},
+                    {"name": "Escalation Reason", "value": ticket_data.get("reason_category", "Teacher Help Needed"), "inline": False},
+                    {"name": "Issue Description", "value": ticket_data.get("issue_description", "N/A"), "inline": False},
+                    {"name": "What Agent Checked", "value": ticket_data.get("agent_checked", "N/A"), "inline": False},
+                    {"name": "Preferred Follow-up", "value": f"{ticket_data.get('preferred_contact_method', 'Phone Call')} (2-4 hrs timeline)", "inline": True},
+                ],
+                "footer": {"text": f"Status: {ticket_data.get('status', 'OPEN')} | 10 Days of Voice Agents (Day 7)"},
+                "timestamp": datetime.datetime.now().isoformat(),
+            }
+        ],
+    }
+
+    try:
+        req = urllib.request.Request(
+            webhook_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json", "User-Agent": "ShikshaAI/1.0"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=4) as resp:
+            if resp.status in (200, 204):
+                logger.info(f"Successfully posted escalation ticket {ref_id} to Discord Webhook.")
+                return True
+    except Exception as e:
+        logger.warning(f"Failed to post escalation ticket {ref_id} to Discord Webhook: {e}")
+
+    return False
+
+
+@llm.function_tool
+def create_escalation(
+    caller_name: str,
+    reason_category: str,
+    issue_description: str,
+    agent_checked: str,
+    contact_info: str = "+919876543210",
+    urgency: str = "medium",
+    preferred_language: str = "Hindi",
+    preferred_contact_method: str = "Phone Call",
+    user_consent_granted: bool = True,
+    db_path: str = None,
+) -> str:
+    """Escalate a learner problem to a human teacher by creating an official support request ticket.
+
+    CRITICAL MANDATORY RULE: You MUST explicitly ask the caller for permission BEFORE invoking this tool.
+
+    Escalation Reasons (Pick one):
+    1. Frustrated Learner / Teacher Help Needed: The learner is upset, stuck repeatedly, or explicitly requests human teacher guidance.
+    2. Exam, Certificate, or Policy Dispute: The caller reports errors in official CBSE exam hall tickets, marks re-checking disputes, or fee/scholarship issues.
+
+    Args:
+        caller_name: Name of the caller or learner.
+        reason_category: Escalation reason category.
+        issue_description: Short, precise summary of what happened and what help is needed.
+        agent_checked: Summary of what the AI agent already tried or checked during the call.
+        contact_info: Learner contact phone number or email address for follow-up.
+        urgency: Urgency level (low, medium, high, emergency).
+        preferred_language: Preferred language for human follow-up.
+        preferred_contact_method: Preferred follow-up method (Phone Call, WhatsApp, Email).
+        user_consent_granted: Must be True if the caller explicitly gave permission to share their details.
+        db_path: Optional custom database path.
+    """
+    if not user_consent_granted:
+        return (
+            "ERROR: CONSENT NOT GRANTED BY CALLER.\n"
+            "You cannot create a human help ticket without explicit user permission.\n"
+            "Spoken Response to Caller: Understood. I will not create a support request. Let us continue studying or take a break."
+        )
+
+    try:
+        from db import DB_PATH
+        target_db = db_path or DB_PATH
+        ticket = save_human_help_request(
+            caller_name=caller_name,
+            reason_category=reason_category,
+            issue_description=issue_description,
+            agent_checked=agent_checked,
+            contact_info=contact_info,
+            urgency=urgency,
+            preferred_language=preferred_language,
+            preferred_contact_method=preferred_contact_method,
+            user_consent_granted=user_consent_granted,
+            db_path=target_db,
+        )
+
+        # Dispatch to Discord Webhook if configured
+        send_discord_webhook(ticket)
+
+        ref_id = ticket["ref_id"]
+        is_dup = ticket.get("is_duplicate", False)
+
+        if is_dup:
+            return (
+                f"STATUS: EXISTING TICKET UPDATED ({ref_id})\n"
+                f"Reference ID: {ref_id}\n"
+                f"Caller: {caller_name}\n"
+                f"Urgency: {urgency.upper()}\n"
+                f"Next Step: A senior teacher already has an open ticket ({ref_id}) and will review the new notes.\n"
+                f"Note for Agent: Tell the caller their request {ref_id} has been updated and a senior teacher will call back on {preferred_contact_method} within 2 hours."
+            )
+
+        return (
+            f"STATUS: HUMAN HELP TICKET CREATED ({ref_id})\n"
+            f"Reference ID: {ref_id}\n"
+            f"Caller: {caller_name}\n"
+            f"Urgency: {urgency.upper()}\n"
+            f"Preferred Follow-up: {preferred_contact_method} in {preferred_language}\n"
+            f"Next Step: Ticket saved to database & queued for senior teaching staff. Expected call back within 2-4 hours.\n"
+            f"Note for Agent: State the Reference ID '{ref_id}' aloud clearly to the caller, tell them a senior teacher will contact them in 2 to 4 hours, and ask if they need anything else."
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to create human help request: {e}")
+        return f"ERROR: Could not create human help request due to system error: {e}"
+

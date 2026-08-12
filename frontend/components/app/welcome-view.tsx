@@ -16,9 +16,110 @@ export const WelcomeView = ({
   hasEndedCall = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  const [activeTab, setActiveTab] = useState<'day6outbound' | 'day5tools' | 'overview' | 'states' | 'guardrails'>('day6outbound');
+  const [activeTab, setActiveTab] = useState<'day7escalation' | 'day6outbound' | 'day5tools' | 'overview' | 'states' | 'guardrails'>('day7escalation');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
+  const [escalationRequests, setEscalationRequests] = useState<any[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const [isLoadingRequests, setIsLoadingRequests] = useState<boolean>(false);
+
+  const fetchEscalationRequests = async (statusFilter = filterStatus) => {
+    setIsLoadingRequests(true);
+    try {
+      const url = `/api/escalation?status=${statusFilter === 'ALL' ? '' : statusFilter}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setEscalationRequests(data.requests || []);
+      }
+    } catch (e) {
+      console.error('Failed to load escalation requests:', e);
+    } finally {
+      setIsLoadingRequests(false);
+    }
+  };
+
+  const handleUpdateStatus = async (ref_id: string, new_status: string) => {
+    try {
+      const res = await fetch('/api/escalation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_status',
+          ref_id,
+          status: new_status,
+          notes: `Updated to ${new_status} via Human Admin Dashboard`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchEscalationRequests();
+      }
+    } catch (e) {
+      console.error('Failed to update status:', e);
+    }
+  };
+
+  const handleCreateDemoRequest = async (category: string, desc: string) => {
+    try {
+      const res = await fetch('/api/escalation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_request',
+          caller_name: 'Ramesh',
+          reason_category: category,
+          issue_description: desc,
+          agent_checked: 'AI Agent verified NCERT syllabus & asked for caller consent.',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchEscalationRequests();
+      }
+    } catch (e) {
+      console.error('Failed to create demo request:', e);
+    }
+  };
+
+  const day7EscalationScenarios = [
+    {
+      scene: 'Scenario 1: Frustrated Learner / Teacher Help (Escalation Path)',
+      title: 'Caller Upset & Stuck -> Explicit Consent -> Ref ID',
+      prompt: '"I don\'t understand calculus at all, I\'m frustrated, call a human teacher!"',
+      expectedOutcome: 'Agent identifies trigger, asks permission to share info with senior teacher. User consents. Agent calls create_escalation, saves ticket to DB, posts Discord Webhook, speaks Ref ID (REF-XXXXX), and gives 2-4 hr timeline.',
+      userConsent: 'Explicit Consent Granted',
+      type: 'Human Escalation',
+      color: 'from-amber-500/20 to-rose-500/10 border-amber-500/40 text-amber-300',
+    },
+    {
+      scene: 'Scenario 2: Exam / Certificate Dispute (Escalation Path)',
+      title: 'Official Exam Error -> Explicit Consent -> Ref ID',
+      prompt: '"My CBSE Hall Ticket photo is incorrect, connect me to human support!"',
+      expectedOutcome: 'Agent asks explicit permission, creates administrative policy escalation ticket REF-XXXXX, and provides honest next steps.',
+      userConsent: 'Explicit Consent Granted',
+      type: 'Exam Dispute',
+      color: 'from-purple-500/20 to-indigo-500/10 border-purple-500/40 text-purple-300',
+    },
+    {
+      scene: 'Scenario 3: Consent Denied by Caller (No Ticket Path)',
+      title: 'Caller Refuses Permission -> Request Aborted',
+      prompt: '"I am stuck on math, but NO, do NOT share my information or create a ticket."',
+      expectedOutcome: 'Agent respects refusal, DOES NOT call create_escalation tool, and continues conversation politely.',
+      userConsent: 'Consent Denied (Aborted)',
+      type: 'Consent Refused',
+      color: 'from-rose-500/20 to-red-500/10 border-rose-500/40 text-rose-300',
+    },
+    {
+      scene: 'Scenario 4: Standard Educational Query (Normal Path)',
+      title: 'Normal Question -> AI Answers -> No Ticket',
+      prompt: '"What is photosynthesis in simple Hindi?"',
+      expectedOutcome: 'Agent answers using educational tools normally. NO human escalation ticket created.',
+      userConsent: 'Normal AI Conversation',
+      type: 'Normal Path',
+      color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/40 text-emerald-300',
+    },
+  ];
 
   const day6OutboundScenarios = [
     {
@@ -147,12 +248,12 @@ export const WelcomeView = ({
       <section className="relative z-10 flex max-w-3xl flex-col items-center text-center">
         {/* Language & Track Header Bar */}
         <div className="mb-2 flex items-center justify-between w-full max-w-xl px-2">
-          <div className="inline-flex items-center space-x-2 rounded-full border border-amber-500/40 bg-slate-900/90 px-3 py-1 text-[11px] font-extrabold text-amber-300 shadow-lg backdrop-blur-xl">
+          <div className="inline-flex items-center space-x-2 rounded-full border border-rose-500/40 bg-slate-900/90 px-3 py-1 text-[11px] font-extrabold text-rose-300 shadow-lg backdrop-blur-xl">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
             </span>
-            <span>📞 DAY 6 • MAKE OUTBOUND CALLS &amp; TELEPHONY (SIP/TWILIO)</span>
+            <span>🚨 DAY 7 • KNOW WHEN TO ASK FOR HUMAN HELP &amp; ESCALATION</span>
           </div>
 
           <button
@@ -191,30 +292,40 @@ export const WelcomeView = ({
           </span>
         </h1>
 
-        {/* Day 6 Ready Badge */}
-        <div className="mb-2 inline-flex items-center space-x-1.5 rounded-full border border-amber-500/40 bg-amber-950/70 px-3 py-0.5 text-[11px] font-extrabold text-amber-300 shadow-md">
-          <span className="size-2 rounded-full bg-amber-400 animate-pulse" />
+        {/* Day 7 Ready Badge */}
+        <div className="mb-2 inline-flex items-center space-x-1.5 rounded-full border border-rose-500/40 bg-rose-950/70 px-3 py-0.5 text-[11px] font-extrabold text-rose-300 shadow-md">
+          <span className="size-2 rounded-full bg-rose-400 animate-pulse" />
           <span>
             {lang === 'hi'
-              ? '📞 डे 6: आउटबाउंड टेलीफोनी, अनिवार्य 2-वाक्य ओपनिंग एवं ऑप्ट-आउट सक्रिय'
-              : '📞 Day 6: Outbound Calls, Mandated 2-Sentence Opening & Opt-Out Active'}
+              ? '🚨 डे 7: ह्यूमन-इन-द-लूप एस्केलेशन, अनुमति सत्यापन एवं लाइव डैशबोर्ड सक्रिय'
+              : '🚨 Day 7: Know When to Ask for Human Help, Explicit Consent & Live Escalation Desk'}
           </span>
         </div>
 
         <p className="mb-1.5 max-w-xl text-base font-medium leading-snug text-amber-200/90 sm:text-xl">
           {lang === 'hi'
-            ? 'डेली NCERT अभ्यास के लिए आउटबाउंड कॉल्स (Learning & Literacy Track)'
-            : 'Outbound Automated Practice Calls for Daily Learning & Literacy'}
+            ? 'शिक्षा AI — मानव शिक्षक सहायता एवं एस्केलेशन केंद्र (Learning Track)'
+            : 'Human Teacher Escalation & Human-in-the-Loop Support System'}
         </p>
 
         <p className="mb-4 max-w-lg text-xs font-normal leading-relaxed text-slate-300 sm:text-sm">
           {lang === 'hi'
-            ? 'शिक्षा AI अब विद्यार्थियों को डेली NCERT अभ्यास के लिए आउटबाउंड कॉल करती है। पहली दो पंक्तियों में नाम, कारण और कॉल्स बंद करने का तरीका (Opt-out) बताती है।'
-            : 'Shiksha AI makes outbound practice calls to learners. Opening in 2 sentences with Who is calling, Why, and How to Opt-Out with outcome handling & retry rules.'}
+            ? 'शिक्षा AI अब पहचानती है कि कब मानव शिक्षक की मदद चाहिए। अनुमति लेकर सपोर्ट टिकट बनाती है और लाइव डैशबोर्ड पर स्थिति प्रदर्शित करती है।'
+            : 'Shiksha AI knows when to ask for human help. Asks explicit caller permission before sharing details, scrubs PII, and posts to DB & Discord Webhook with live status updates.'}
         </p>
 
         {/* Tab Navigation Controls */}
         <div className="mb-3 flex flex-wrap items-center justify-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 text-xs font-semibold backdrop-blur-md">
+          <button
+            onClick={() => setActiveTab('day7escalation')}
+            className={`rounded-lg px-3 py-1.5 transition-all ${
+              activeTab === 'day7escalation'
+                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-orange-500 font-bold text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            🚨 Day 7 Human Escalations
+          </button>
           <button
             onClick={() => setActiveTab('day6outbound')}
             className={`rounded-lg px-3 py-1.5 transition-all ${
@@ -247,7 +358,152 @@ export const WelcomeView = ({
           </button>
         </div>
 
-        {/* TAB: DAY 6 OUTBOUND CALLS */}
+        {/* TAB: DAY 7 HUMAN ESCALATIONS */}
+        {activeTab === 'day7escalation' && (
+          <div className="mb-4 w-full space-y-3 text-left max-h-[320px] overflow-y-auto pr-1">
+            {/* Scenarios Grid */}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {day7EscalationScenarios.map((sc, i) => (
+                <div
+                  key={i}
+                  className={`relative rounded-xl border bg-gradient-to-br ${sc.color} p-2.5 shadow-sm backdrop-blur-md transition-all hover:scale-[1.01]`}
+                >
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="font-mono text-[11px] font-bold text-amber-200">{sc.scene}</span>
+                    <span className="rounded bg-black/40 px-1.5 py-0.5 font-mono text-[9px] font-bold text-slate-300">
+                      {sc.type}
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-100">{sc.title}</h4>
+                  <p className="mt-1 font-mono text-[11px] italic text-slate-300">{sc.prompt}</p>
+                  <p className="mt-1 text-[11px] leading-tight text-slate-300">{sc.expectedOutcome}</p>
+                  <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-1.5 text-[10px]">
+                    <span className="font-semibold text-amber-300">Consent Rule: {sc.userConsent}</span>
+                    {sc.type !== 'Normal Path' && sc.type !== 'Consent Refused' && (
+                      <button
+                        onClick={() => handleCreateDemoRequest(sc.title, sc.prompt)}
+                        className="rounded bg-amber-500/30 px-2 py-0.5 font-bold text-amber-200 hover:bg-amber-500/50"
+                      >
+                        + Create Demo Ticket
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Live Human Escalation Requests Dashboard */}
+            <div className="rounded-xl border border-rose-500/40 bg-slate-950/80 p-3 backdrop-blur-md">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-rose-500/20 pb-2">
+                <div className="flex items-center space-x-2">
+                  <span className="font-mono text-xs font-extrabold text-rose-300">
+                    🚨 LIVE HUMAN HELP REQUESTS CENTER (SQLite DB)
+                  </span>
+                  <span className="rounded-full bg-rose-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-300">
+                    {escalationRequests.length} Requests
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1 text-[10px]">
+                  {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map((st) => (
+                    <button
+                      key={st}
+                      onClick={() => setFilterStatus(st)}
+                      className={`rounded px-2 py-0.5 font-bold transition-all ${
+                        filterStatus === st
+                          ? 'bg-rose-500 text-slate-950 shadow-sm'
+                          : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => fetchEscalationRequests()}
+                    className="rounded bg-slate-800 px-2 py-0.5 font-bold text-amber-300 hover:bg-slate-700"
+                  >
+                    🔄 Refresh
+                  </button>
+                </div>
+              </div>
+
+              {isLoadingRequests ? (
+                <div className="py-4 text-center font-mono text-xs text-slate-400">Loading requests...</div>
+              ) : escalationRequests.length === 0 ? (
+                <div className="py-4 text-center font-mono text-xs text-slate-400">
+                  No human help requests found for filter [{filterStatus}]. Create a test request or speak to agent.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                  {escalationRequests.map((req) => (
+                    <div
+                      key={req.ref_id}
+                      className="flex flex-col gap-1 rounded-lg border border-white/10 bg-slate-900/90 p-2 text-xs backdrop-blur-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono font-black text-amber-300">{req.ref_id}</span>
+                          <span className="font-semibold text-slate-200">{req.caller_name} ({req.contact_info})</span>
+                          <span
+                            className={`rounded px-1.5 py-0.2 font-mono text-[9px] font-black uppercase ${
+                              req.urgency === 'high' || req.urgency === 'emergency'
+                                ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50'
+                                : req.urgency === 'medium'
+                                ? 'bg-amber-500/30 text-amber-300 border border-amber-500/50'
+                                : 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50'
+                            }`}
+                          >
+                            {req.urgency}
+                          </span>
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-bold ${
+                            req.status === 'OPEN'
+                              ? 'bg-rose-500/20 text-rose-300 animate-pulse'
+                              : req.status === 'IN_PROGRESS'
+                              ? 'bg-amber-500/20 text-amber-300'
+                              : 'bg-emerald-500/20 text-emerald-300'
+                          }`}
+                        >
+                          {req.status}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-300">
+                        <span className="font-bold text-amber-200/90">Reason:</span> {req.reason_category}
+                      </div>
+                      <div className="text-[11px] text-slate-300">
+                        <span className="font-bold text-amber-200/90">Issue (Sanitized):</span> {req.issue_description}
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        <span className="font-semibold text-slate-300">Agent Checked:</span> {req.agent_checked}
+                      </div>
+                      <div className="mt-1 flex items-center justify-between border-t border-white/5 pt-1 text-[10px] text-slate-400">
+                        <span>Follow-up: {req.preferred_contact_method} ({req.preferred_language})</span>
+                        <div className="flex items-center space-x-1">
+                          {req.status !== 'IN_PROGRESS' && req.status !== 'RESOLVED' && (
+                            <button
+                              onClick={() => handleUpdateStatus(req.ref_id, 'IN_PROGRESS')}
+                              className="rounded bg-amber-500/20 px-2 py-0.5 font-bold text-amber-300 hover:bg-amber-500/40"
+                            >
+                              Assign Teacher
+                            </button>
+                          )}
+                          {req.status !== 'RESOLVED' && (
+                            <button
+                              onClick={() => handleUpdateStatus(req.ref_id, 'RESOLVED')}
+                              className="rounded bg-emerald-500/20 px-2 py-0.5 font-bold text-emerald-300 hover:bg-emerald-500/40"
+                            >
+                              ✓ Mark Resolved
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {activeTab === 'day6outbound' && (
           <div className="mb-4 w-full space-y-2 text-left max-h-[240px] overflow-y-auto pr-1">
             {/* Opening Script Box */}
@@ -404,7 +660,7 @@ export const WelcomeView = ({
           >
             <span className="relative z-10 flex items-center justify-center space-x-2.5">
               <span className="size-2.5 animate-ping rounded-full bg-slate-950" />
-              <span>{hasEndedCall ? (lang === 'hi' ? 'फिर से शुरू करें (Start Session)' : 'Start Outbound Session (Test Day 6 Calls)') : (lang === 'hi' ? 'कॉल शुरू करें (Start Call)' : startButtonText)}</span>
+              <span>{hasEndedCall ? (lang === 'hi' ? 'फिर से शुरू करें (Start Session)' : 'Start Voice Session (Test Day 7 Human Escalations)') : (lang === 'hi' ? 'कॉल शुरू करें (Start Call)' : startButtonText)}</span>
               <svg
                 className="size-5 transition-transform duration-300 group-hover:translate-x-1.5"
                 fill="none"
