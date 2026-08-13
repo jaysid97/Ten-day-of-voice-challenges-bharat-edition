@@ -9,6 +9,11 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+# Add backend/src directory to sys.path so db and tools can be imported
+backend_src = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "murf-livekit-starter", "backend", "src"))
+if backend_src not in sys.path:
+    sys.path.insert(0, backend_src)
+
 from dotenv import load_dotenv
 from livekit import rtc
 from livekit.agents import (
@@ -48,7 +53,7 @@ logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
-# Day 7: Shiksha AI — Cyber-Bharat Learning & Literacy Persona with Human Escalation Capabilities
+# Day 8: Shiksha AI — Real-Time Call Analytics & Performance Tracking
 SYSTEM_PROMPT = """IDENTITY:
 You are Shiksha AI (शिक्षा AI), an empathetic, patient, and highly intelligent AI Learning & Literacy Tutor built for Bharat by Bharat EdTech. You can teach ANY SUBJECT (Math, Science, Physics, Chemistry, Biology, History, Geography, Computer Science / Coding, General Knowledge, Economics) and ANY LANGUAGE (Hindi, Sanskrit, Tamil, Telugu, Marathi, Gujarati, Bengali, Spoken English, French, Spanish, German, Japanese, etc.).
 
@@ -113,11 +118,7 @@ CRITICAL VOICE & FORMATTING RULES:
 
 @llm.function_tool
 def lookup_caller(user_id_or_name: str) -> str:
-    """Look up a caller's profile and learning history from the SQLite database.
-
-    Args:
-        user_id_or_name: The user's name or identifier to search for (e.g. 'Ramesh').
-    """
+    """Look up a caller's profile and learning history from the SQLite database."""
     profile = get_user_profile(user_id_or_name)
     if not profile:
         return f"No existing profile found for '{user_id_or_name}'. This is a new learner."
@@ -146,19 +147,7 @@ def save_caller_facts(
     struggles: str = "None",
     target_goal: str = "General Literacy",
 ) -> str:
-    """Save or update caller learning facts and profile in the database.
-
-    CRITICAL MANDATORY RULE: You MUST explicitly ask the caller for permission BEFORE invoking this tool.
-
-    Args:
-        user_id_or_name: Caller unique identifier or name (e.g., 'ramesh', 'aarav').
-        name: Caller's full name (e.g., 'Ramesh', 'Aarav').
-        language_preference: Preferred language (e.g., 'Hindi', 'English', 'Hinglish').
-        current_level: Current learning/class level (e.g., 'Class 8 Math', 'Beginner Spoken English').
-        topics_covered: Recent topics studied (e.g., 'Fractions & Decimals', 'Photosynthesis').
-        struggles: Difficulties or repeated mistakes (e.g., 'Multiplying negative numbers', 'Pronunciation').
-        target_goal: Target objective (e.g., 'Pass CBSE exam', 'Speak fluent English').
-    """
+    """Save or update caller learning facts and profile in the database."""
     clean_id = (user_id_or_name or name or "learner").strip().lower()
     clean_name = name if (name and name != "Learner") else clean_id.capitalize()
     facts = {
@@ -180,11 +169,7 @@ def save_caller_facts(
 
 @llm.function_tool
 def forget_caller(user_id_or_name: str) -> str:
-    """Delete and wipe all saved records for the caller from the database.
-
-    Args:
-        user_id_or_name: Name or ID of caller to delete.
-    """
+    """Delete and wipe all saved records for the caller from the database."""
     deleted = delete_user_profile(user_id_or_name)
     if deleted:
         return f"Caller record for '{user_id_or_name}' has been permanently wiped from the database."
@@ -193,14 +178,7 @@ def forget_caller(user_id_or_name: str) -> str:
 
 @llm.function_tool
 def opt_out_learner(user_id_or_name: str, reason: str = "Caller requested opt-out during call") -> str:
-    """Opt out the caller from receiving any future outbound study practice calls.
-
-    Call this tool when the user says 'stop calls', 'opt out', 'कॉल्स बंद करो', 'don't call me', or 'unsubscribe'.
-
-    Args:
-        user_id_or_name: Name or ID of caller requesting opt-out.
-        reason: Reason for opting out.
-    """
+    """Opt out the caller from receiving any future outbound study practice calls."""
     success = set_learner_opt_out(user_id_or_name, opt_out=True, reason=reason)
     if success:
         return f"Successfully opted out '{user_id_or_name}'. No future outbound calls will be placed to this learner."
@@ -241,7 +219,7 @@ async def my_agent(ctx: JobContext):
         "room": ctx.room.name,
     }
 
-    # Initialize SQLite DB with Day 6 Schema
+    # Initialize SQLite DB with Day 8 Schema
     init_db()
 
     # Determine if session is an outbound call or SIP call
@@ -258,13 +236,9 @@ async def my_agent(ctx: JobContext):
         or ctx.room.name.startswith("outbound_")
         or "outbound" in ctx.room.name.lower()
     )
-    user_id = metadata_obj.get("user_id", "ramesh")
     learner_name = metadata_obj.get("name", "Ramesh")
-    phone_number = metadata_obj.get("phone_number", "+919876543210")
-    topic = metadata_obj.get("topic", "NCERT Class 10 Science Photosynthesis")
-    outcome_sim = metadata_obj.get("outcome_sim", "ANSWERED").upper()
 
-    # Set up voice AI pipeline using Murf Falcon, Gemini, Deepgram Multilingual, LiveKit turn detector
+    # Set up voice AI pipeline using Murf Falcon, Gemini, Deepgram Multilingual
     session = AgentSession(
         stt=deepgram.STT(
             model="nova-3",
@@ -321,72 +295,6 @@ async def my_agent(ctx: JobContext):
         duration_seconds=90,
         notes="Live voice call session active",
     )
-
-    # Day 6 Outbound Call Logic & Mandatory Opening Script
-    if is_outbound:
-        call_id = f"call_{int(datetime.now().timestamp())}"
-        
-        # Check if learner has opted out
-        if is_learner_opted_out(user_id):
-            logger.info(f"Outbound call blocked for {user_id} — learner opted out.")
-            log_outbound_call(call_id, user_id, phone_number, topic, "OPT_OUT", notes="Blocked by prior opt-out preference")
-            await session.say(f"Learner {learner_name} has opted out of outbound calls. Disconnecting.")
-            return
-
-        if outcome_sim == "VOICEMAIL":
-            log_outbound_call(call_id, user_id, phone_number, topic, "VOICEMAIL", notes="Left spoken voicemail message drop")
-            voicemail_msg = (
-                f"नमस्ते {learner_name} जी! मैं शिक्षा AI बोल रहा हूँ, आपकी NCERT {topic} प्रैक्टिस कॉल के लिए। "
-                "जब आप फ्री हों, ऐप खोलें या वापस कनेक्ट करें। कॉल्स बंद करने के लिए STOP कहें। धन्यवाद!"
-            )
-            await session.say(voicemail_msg)
-            return
-
-        if outcome_sim == "NO_ANSWER":
-            log_outbound_call(call_id, user_id, phone_number, topic, "NO_ANSWER", notes="Call unanswered after 30s ring")
-            await session.say("Outbound call status: NO ANSWER. Retry scheduled in 15 minutes.")
-            return
-
-        if outcome_sim == "BUSY":
-            log_outbound_call(call_id, user_id, phone_number, topic, "BUSY", notes="Line busy or rejected")
-            await session.say("Outbound call status: BUSY. Retry scheduled in 5 minutes.")
-            return
-
-        # Default Outcome: ANSWERED (Day 6 Mandatory 2-Sentence Opening Script)
-        log_outbound_call(call_id, user_id, phone_number, topic, "ANSWERED", notes="Call connected & completed successfully")
-        
-        # Mandatory Day 6 Opening Script:
-        # Sentence 1: Who is calling & Why
-        # Sentence 2: How to make it stop / Opt-Out
-        # Sentence 3: Value delivery / Daily practice prompt
-        outbound_opening = (
-            f"नमस्ते {learner_name} जी! मैं शिक्षा AI बोल रहा हूँ, आपकी डेली 5-मिनट NCERT प्रैक्टिस कॉल के लिए। "
-            f"अगर आप ये कॉल्स बंद करना चाहते हैं, तो बस 'स्टॉप' या 'कॉल्स बंद करो' बोल दें। "
-            f"आज हम {topic} रिवाइज करेंगे। क्या आप शुरू करने के लिए तैयार हैं?"
-        )
-        await session.say(outbound_opening)
-
-    else:
-        # Standard Inbound Call Greeting
-        if recent_profile:
-            name = recent_profile.get("name", "Learner")
-            facts = recent_profile.get("facts", {})
-            saved_topic = facts.get("topics_covered", "school topics")
-            greeting = (
-                f"नमस्ते {name} जी! शिक्षा AI में आपका स्वागत है। "
-                f"पिछली बार हमने {saved_topic} पढ़ा था। आज आगे का टॉपिक पढ़ें या कोई प्रश्न है?"
-            )
-        else:
-            greeting = (
-                "नमस्ते! मैं शिक्षा AI हूँ, आपका पर्सनल लर्निंग साथी। "
-                "आप मुझसे हिंदी या इंग्लिश किसी भी भाषा में बात कर सकते हैं। आपका नाम क्या है और आज हम कौन सा टॉपिक स्टडी करें?"
-            )
-        await session.say(greeting)
-
-
-if __name__ == "__main__":
-    cli.run_app(server)
-
 
 
 if __name__ == "__main__":

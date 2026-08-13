@@ -9,6 +9,11 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+# Add backend/src directory to sys.path so db and tools can be imported
+backend_src = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "murf-livekit-starter", "backend", "src"))
+if backend_src not in sys.path:
+    sys.path.insert(0, backend_src)
+
 from dotenv import load_dotenv
 from livekit import rtc
 from livekit.agents import (

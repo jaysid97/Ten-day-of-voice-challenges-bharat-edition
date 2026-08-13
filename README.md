@@ -24,6 +24,7 @@ Welcome to the **10 Days of Voice AI Challenge (#VoiceForBharat)** repository fe
 | **Day 5** | Domain Tools & Multi-Subject Engine | **Shiksha AI** | [DAY5_GUIDE.md](./DAY5_GUIDE.md): Live Educational API, multi-subject & language learning, Day 4 tool chaining, graceful out-loud fallbacks | ✅ Completed |
 | **Day 6** | Outbound Calls & Telephony | **Shiksha AI** | [DAY6_GUIDE.md](./DAY6_GUIDE.md): LiveKit SIP/Twilio outbound dispatch, 2-sentence opening script (Who, Why, Opt-Out), SQLite call log, outcome & retry rules | ✅ Completed |
 | **Day 7** | Know When to Ask for Human Help | **Shiksha AI** | [DAY7_GUIDE.md](./DAY7_GUIDE.md): Human escalation tool (`create_escalation`), hard consent rule, PII scrubbing, SQLite & Discord Webhook tickets, live admin dashboard | ✅ Completed |
+| **Day 8** | Track Performance & Call Analytics | **Shiksha AI** | [DAY8_GUIDE.md](./DAY8_GUIDE.md): Call metrics, SQLite `call_analytics` schema, real-time `/analytics` dashboard, failure category breakdown & automated tests | ✅ Completed |
 
 ---
 
@@ -160,6 +161,12 @@ Open **`http://localhost:3000`** in your browser!
 - **Timestamped Attribution**: All returned data is timestamped (*"Sourced live as of today (2026-08-10)"*).
 - **Smoother Character Skin & UI HUD**: Redesigned tutor avatar with silky warm skin gradients, cheek blush, eye highlights, and a live Multi-Subject HUD status header in the script layout.
 
+### 📊 Day 8 Highlight: Real-Time Call Analytics & Performance Dashboard
+- **Key Call Metrics Engine**: Tracks Total Calls, Success Rate (%), Failure Categories, Tool Frequencies, and Call Duration.
+- **SQLite Persistence**: Schema `call_analytics` logs metrics directly during session teardown.
+- **Failure Taxonomy**: Categorizes failures (`STT_SPEECH_RECOGNITION_ERROR`, `NETWORK_API_TIMEOUT`, `LLM_GUARDRAIL_REFUSAL`, `LEARNER_DISCONNECTED`).
+- **Interactive Next.js Dashboard (`/analytics`)**: Real-time KPI cards, failure distribution progress bars, history table with 3s polling, and single-click call simulation controls.
+
 ---
 
 ## 📁 Repository Directory Structure
@@ -173,6 +180,7 @@ ten-day-voice-agent-bharat-edition/
 ├── DAY5_GUIDE.md            # Day 5 Real Domain Tools & Multi-Subject Guide
 ├── DAY6_GUIDE.md            # Day 6 Outbound Calls & Telephony Guide
 ├── DAY7_GUIDE.md            # Day 7 Know When to Ask for Human Help Guide
+├── DAY8_GUIDE.md            # Day 8 Real-Time Call Analytics & Performance Dashboard Guide
 ├── README.md                # Main Repository Readme
 ├── start_app.ps1            # Windows Application Starter Script
 ├── start_app.sh             # Linux/macOS Application Starter Script
@@ -183,14 +191,15 @@ ten-day-voice-agent-bharat-edition/
     │   ├── src/
     │   │   ├── agent.py     # Main Shiksha AI Agent Logic & Pipeline
     │   │   ├── tools.py     # Day 5 Tools, Day 6 Opt-Out, Day 7 Human Escalations
-    │   │   ├── db.py        # SQLite Memory, Outbound Logs & Escalation Requests DB
+    │   │   ├── db.py        # SQLite Memory, Outbound Logs, Escalations & Analytics DB
     │   │   └── outbound_call.py # Day 6 SIP/Twilio Outbound Dispatcher Script
     │   └── tests/
     │       ├── test_day5_tools.py      # Pytest Suite for Day 5 Domain Tools
     │       ├── test_day6_outbound.py   # Pytest Suite for Day 6 Outbound Telephony
-    │       └── test_day7_escalation.py # Pytest Suite for Day 7 Human Escalations
+    │       ├── test_day7_escalation.py # Pytest Suite for Day 7 Human Escalations
+    │       └── test_day8_analytics.py  # Pytest Suite for Day 8 Call Analytics
     └── frontend/            # Next.js 15 Smart Classroom Web App
-        ├── app/             # App Router Pages, Token & Escalation API Endpoints
+        ├── app/             # App Router Pages, Token, Escalation & Analytics API Endpoints
         └── components/
             ├── app/
             │   ├── human-ai-tutor.tsx  # Interactive Character Avatar
@@ -203,10 +212,10 @@ ten-day-voice-agent-bharat-edition/
 
 ## 🧪 Running Automated Unit Tests
 
-To run the automated pytest unit test suites for Day 5, Day 6, and Day 7:
+To run the automated pytest unit test suites for Day 5, Day 6, Day 7, and Day 8:
 ```powershell
 cd backend
-& "d:\ten day voice agent bharat edition\backend\.venv\Scripts\python.exe" -m pytest tests/test_day7_escalation.py tests/test_day6_outbound.py tests/test_day5_tools.py
+& "d:\ten day voice agent bharat edition\backend\.venv\Scripts\python.exe" -m pytest tests/test_day8_analytics.py tests/test_day7_escalation.py tests/test_day6_outbound.py tests/test_day5_tools.py
 ```
 
 ---

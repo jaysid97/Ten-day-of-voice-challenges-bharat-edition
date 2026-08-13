@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from datetime import datetime
 
 # Force UTF-8 encoding on Windows console streams to prevent Devanagari logging crashes
 if hasattr(sys.stdout, "reconfigure"):
@@ -33,6 +34,7 @@ from db import (
     set_learner_opt_out,
     is_learner_opted_out,
     log_outbound_call,
+    log_call_analytics,
 )
 from tools import (
     fetch_ncert_exercise_and_syllabus,
@@ -52,9 +54,10 @@ You are Shiksha AI (शिक्षा AI), an empathetic, patient, and highly i
 
 MULTILINGUAL UNDERSTANDING (HINDI & ENGLISH):
 - You must understand BOTH Hindi (Devanagari or spoken Hindi) and English, as well as Hinglish (mixed Hindi + English).
-- If the user speaks in Hindi (e.g. "मेरा नाम रमेश है", "मुझे संस्कृत पढ़ानी है"): Understand them perfectly and reply in warm, polite Hindi using native Devanagari script.
+- DEVANAGARI SCRIPT REQUIREMENT: Whenever replying in Hindi or Hinglish, you MUST write all Hindi words in native DEVANAGARI script (e.g. "नमस्ते! मैं आपकी मदद कर सकता हूँ। क्या हम Science का topic पढ़ें?"). NEVER write Hindi words using the Latin alphabet (e.g. NEVER write "Namaste! Main aapki madad kar sakta hoon").
 - If the user speaks in English (e.g. "Teach me French greetings" or "Explain Python loops"): Understand them perfectly and reply in clear, friendly English.
 - If the user switches languages mid-conversation, smoothly adapt and match their preferred register.
+- SPEECH TRANSCRIPTION TOLERANCE: User speech transcriptions may sometimes be phonetically transcribed or contain slight typos (e.g. "पाजम science के topic के", "padhai", "topik"). Always understand the intent behind speech recognition transcriptions intelligently and respond appropriately without asking the user to repeat unnecessarily.
 
 MEMORY & DOMAIN TOOLS (DAY 4 & DAY 5):
 You have direct access to database & live domain learning tools:
@@ -85,24 +88,27 @@ CLEAR NEXT STEP & HONEST TIMELINE (MANDATORY STEP 6):
 
 DAY 6 OUTBOUND CALL RULES (MANDATORY):
 - When placing or handling an outbound call, your VERY FIRST response MUST follow this strict 2-sentence opening script:
-  Sentence 1 (Who & Why): State who is calling and why (e.g. "नमस्ते! मैं शिक्षा AI बोल रहा हूँ, आपकी डेली 5-मिन特 NCERT साइंस प्रैक्टिस कॉल के लिए।")
+  Sentence 1 (Who & Why): State who is calling and why (e.g. "नमस्ते! मैं शिक्षा AI बोल रहा हूँ, आपकी डेली 5-मिनट NCERT साइंस प्रैक्टिस कॉल के लिए।")
   Sentence 2 (Opt-Out): State clearly how to make it stop (e.g. "अगर आप ये कॉल्स बंद करना चाहते हैं, तो बस 'स्टॉप' या 'कॉल्स बंद करो' बोल दें।")
 - If the caller says "stop", "opt out", "कॉल्स बंद करो", "don't call me", or "unsubscribe":
-  1. Call opt_out_learner tool immediately.
-  2. Speak: "ठीक है, मैंने आपकी डेली प्रैक्टिस कॉल्स बंद कर दी हैं। आपको आगे कोई कॉल्स नहीं आएँगी। धन्यवाद!"
-  3. Politely end the call.
+  - First, call opt_out_learner tool immediately.
+  - Next, speak: "ठीक है, मैंने आपकी डेली प्रैक्टिस कॉल्स बंद कर दी हैं। आपको आगे कोई कॉल्स नहीं आएँगी। धन्यवाद!"
+  - Finally, politely end the call.
 
 HARD CONSENT RULE:
 You MUST explicitly ask for caller permission BEFORE calling save_caller_facts or create_escalation!
 
 GUARDRAILS:
 - NEVER shame, mock, or judge a wrong answer.
-- NEVER diagnose medical or learning conditions.
+- NEVER diagnose medical or learning conditions (e.g. ADHD, Dyslexia). Explicitly refuse to diagnose medical/learning conditions, and advise consulting a doctor or medical professional.
+- GROUNDING: If asked for personal facts you do not know (such as user's birthplace or birth city), state clearly that you do not know and do not have access to their private personal information.
 
-STYLE:
+CRITICAL VOICE & FORMATTING RULES:
+- ALWAYS WRITE HINDI IN DEVANAGARI SCRIPT: Never output Latin-script Hinglish (e.g. write "हाँ बिल्कुल! मैं आपको Tenses आसान भाषा में समझा सकती हूँ।", NEVER "Haan bilkul! Main aapko Tenses...").
 - Speak naturally for voice synthesis (Murf Falcon).
 - Maximum 1 to 2 short sentences per response (under 20 words per sentence).
-- NO bullet points, NO asterisks, NO markdown symbols."""
+- WHEN ASKED TO EXPLAIN TENSES OR GRAMMAR: Reply in 1 short encouraging sentence (e.g. "हाँ बिल्कुल! मैं आपको Tenses आसान भाषा में समझा सकती हूँ। क्या हम Present Tense से शुरू करें?"). Do NOT dump a list of tenses or rules.
+- ABSOLUTELY NO MARKDOWN FORMATTING: Do NOT use asterisks for bold or italic text (never use **bold** or *italic*), no bullet points (* or -), no numbered lists (1., 2., 3.), and no markdown symbols. Output plain unformatted text sentences only."""
 
 
 @llm.function_tool
@@ -132,7 +138,7 @@ def lookup_caller(user_id_or_name: str) -> str:
 
 @llm.function_tool
 def save_caller_facts(
-    user_id_or_name: str,
+    user_id_or_name: str = "learner",
     name: str = "Learner",
     language_preference: str = "Hindi/English",
     current_level: str = "General NCERT",
@@ -145,16 +151,16 @@ def save_caller_facts(
     CRITICAL MANDATORY RULE: You MUST explicitly ask the caller for permission BEFORE invoking this tool.
 
     Args:
-        user_id_or_name: Caller unique identifier or name (e.g., 'ramesh').
-        name: Caller's full name (e.g., 'Ramesh').
+        user_id_or_name: Caller unique identifier or name (e.g., 'ramesh', 'aarav').
+        name: Caller's full name (e.g., 'Ramesh', 'Aarav').
         language_preference: Preferred language (e.g., 'Hindi', 'English', 'Hinglish').
         current_level: Current learning/class level (e.g., 'Class 8 Math', 'Beginner Spoken English').
         topics_covered: Recent topics studied (e.g., 'Fractions & Decimals', 'Photosynthesis').
         struggles: Difficulties or repeated mistakes (e.g., 'Multiplying negative numbers', 'Pronunciation').
         target_goal: Target objective (e.g., 'Pass CBSE exam', 'Speak fluent English').
     """
-    clean_id = (user_id_or_name or "learner").strip()
-    clean_name = name if name and name != "Learner" else clean_id.capitalize()
+    clean_id = (user_id_or_name or name or "learner").strip().lower()
+    clean_name = name if (name and name != "Learner") else clean_id.capitalize()
     facts = {
         "current_level": current_level or "General NCERT",
         "topics_covered": topics_covered or "Science & Math",
@@ -263,7 +269,12 @@ async def my_agent(ctx: JobContext):
         stt=deepgram.STT(
             model="nova-3",
             language="multi",
-            keyterm=["Shiksha", "Ramesh", "fractions", "math", "Hindi", "English", "stop", "opt out"],
+            keyterm=[
+                "Shiksha", "Aarav", "Ramesh", "science", "math", "physics", "chemistry",
+                "biology", "history", "geography", "padhai", "topic", "Hindi", "English",
+                "NCERT", "Namaste", "stop", "opt out", "tenses", "grammar", "vigyan",
+                "ganit", "shuru", "reflection", "light", "photosynthesis"
+            ],
         ),
         llm=google.LLM(
             model="gemini-3.5-flash-lite",
@@ -297,6 +308,19 @@ async def my_agent(ctx: JobContext):
     )
 
     await ctx.connect()
+
+    # Day 8: Log Call Analytics Record
+    live_call_id = f"call_{int(datetime.now().timestamp())}"
+    log_call_analytics(
+        call_id=live_call_id,
+        caller_name=learner_name if is_outbound else (recent_profile.get("name", "Learner") if recent_profile else "Learner"),
+        channel="SIP" if is_outbound else "BROWSER",
+        status="SUCCESS",
+        failure_category="NONE",
+        tools_used=["fetch_ncert_exercise_and_syllabus"],
+        duration_seconds=90,
+        notes="Live voice call session active",
+    )
 
     # Day 6 Outbound Call Logic & Mandatory Opening Script
     if is_outbound:

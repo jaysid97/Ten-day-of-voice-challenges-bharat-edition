@@ -7,7 +7,10 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger("agent.db")
 
-DB_PATH = os.getenv("DATABASE_PATH", "agent_memory.db")
+# Ensure absolute database path so all backend, frontend API, and CLI processes use the exact same SQLite database file
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DEFAULT_DB_PATH = os.path.join(REPO_ROOT, "agent_memory.db")
+DB_PATH = os.getenv("DATABASE_PATH", DEFAULT_DB_PATH)
 
 
 def get_connection(db_path: str = DB_PATH) -> sqlite3.Connection:
@@ -66,8 +69,41 @@ def init_db(db_path: str = DB_PATH) -> None:
                 notes TEXT
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS call_analytics (
+                call_id TEXT PRIMARY KEY,
+                caller_name TEXT NOT NULL DEFAULT 'Learner',
+                channel TEXT NOT NULL DEFAULT 'BROWSER',
+                status TEXT NOT NULL DEFAULT 'SUCCESS',
+                failure_category TEXT DEFAULT 'NONE',
+                tools_used TEXT NOT NULL DEFAULT '[]',
+                duration_seconds INTEGER DEFAULT 0,
+                timestamp TEXT NOT NULL,
+                notes TEXT
+            )
+        """)
         conn.commit()
-    logger.info(f"Database initialized with Day 7 schema at {db_path}")
+
+        # Seed initial realistic call analytics data if table is empty
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM call_analytics")
+        if cursor.fetchone()[0] == 0:
+            initial_calls = [
+                ("call_1001", "Ramesh Kumar", "BROWSER", "SUCCESS", "NONE", '["fetch_ncert_exercise_and_syllabus"]', 145, datetime.now().isoformat(), "Learner completed NCERT Science photosynthesis exercise"),
+                ("call_1002", "Priya Sharma", "BROWSER", "SUCCESS", "NONE", '["fetch_language_lesson_and_vocabulary"]', 210, datetime.now().isoformat(), "Learner completed Spoken English greeting lesson"),
+                ("call_1003", "Anand Verma", "SIP", "SUCCESS", "NONE", '["create_escalation"]', 180, datetime.now().isoformat(), "Learner requested teacher help for hall ticket error - Ticket REF-84920 created"),
+                ("call_1004", "Sunita Patel", "BROWSER", "FAILED", "INCOMPLETE_TASK", '[]', 25, datetime.now().isoformat(), "Learner disconnected before practice started"),
+                ("call_1005", "Vikram Singh", "SIP", "SUCCESS", "NONE", '["fetch_subject_quiz_and_solution"]', 160, datetime.now().isoformat(), "Learner completed Class 10 Math trigonometry quiz"),
+            ]
+            conn.executemany(
+                """
+                INSERT INTO call_analytics (call_id, caller_name, channel, status, failure_category, tools_used, duration_seconds, timestamp, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                initial_calls,
+            )
+            conn.commit()
+    logger.info(f"Database initialized with Day 8 schema at {db_path}")
 
 
 def get_user_profile(user_id_or_name: str, db_path: str = DB_PATH) -> Optional[Dict[str, Any]]:
@@ -123,26 +159,32 @@ def save_user_profile(
     db_path: str = DB_PATH,
 ) -> bool:
     """Insert or update user profile with facts and timestamp."""
-    clean_user_id = (user_id or name).strip().lower()
-    timestamp = datetime.now().isoformat()
-    facts_json = json.dumps(facts, ensure_ascii=False)
+    try:
+        clean_user_id = (user_id or name or "learner").strip().lower()
+        safe_name = name if (name and name != "Learner") else clean_user_id.capitalize()
+        safe_lang = language_preference or "Hindi/English"
+        timestamp = datetime.now().isoformat()
+        facts_json = json.dumps(facts or {}, ensure_ascii=False)
 
-    with get_connection(db_path) as conn:
-        conn.execute(
-            """
-            INSERT INTO user_profiles (user_id, name, language_preference, facts, last_interaction)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(user_id) DO UPDATE SET
-                name = excluded.name,
-                language_preference = excluded.language_preference,
-                facts = excluded.facts,
-                last_interaction = excluded.last_interaction
-            """,
-            (clean_user_id, name, language_preference, facts_json, timestamp),
-        )
-        conn.commit()
-    logger.info(f"Saved profile for {name} ({clean_user_id})")
-    return True
+        with get_connection(db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO user_profiles (user_id, name, language_preference, facts, last_interaction)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    name = excluded.name,
+                    language_preference = excluded.language_preference,
+                    facts = excluded.facts,
+                    last_interaction = excluded.last_interaction
+                """,
+                (clean_user_id, safe_name, safe_lang, facts_json, timestamp),
+            )
+            conn.commit()
+        logger.info(f"Saved profile for {safe_name} ({clean_user_id})")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving user profile for '{user_id}': {e}")
+        return False
 
 
 def delete_user_profile(user_id_or_name: str, db_path: str = DB_PATH) -> bool:
@@ -318,11 +360,11 @@ def sanitize_summary(text: str) -> str:
     
     sanitized = text
     # Scrub Passwords / Secrets
-    sanitized = re.sub(r'(?i)\b(password|passwd|pwd|pass)\b\s*[:=]?\s*\S+', r'\1: [REDACTED_SENSITIVE]', sanitized)
+    sanitized = re.sub(r'(?i)\b(password|passwd|pwd)\b(?:\s*[:=]|\s+is)?\s*\S+', r'\1: [REDACTED_SENSITIVE]', sanitized)
     # Scrub OTPs
-    sanitized = re.sub(r'(?i)\b(otp|one time password)\b\s*[:=]?\s*\d{4,8}', r'OTP: [REDACTED_OTP]', sanitized)
+    sanitized = re.sub(r'(?i)\b(otp|one time password)\b(?:\s*[:=]|\s+is)?\s*\d{4,8}', r'OTP: [REDACTED_OTP]', sanitized)
     # Scrub PINs
-    sanitized = re.sub(r'(?i)\b(pin|secret pin)\b\s*[:=]?\s*\d{4,6}', r'PIN: [REDACTED_PIN]', sanitized)
+    sanitized = re.sub(r'(?i)\b(pin|secret pin)\b(?:\s*[:=]|\s+is)?\s*\d{4,6}', r'PIN: [REDACTED_PIN]', sanitized)
     # Scrub Credit/Debit Card Numbers (16-digit numbers or spaced/dashed)
     sanitized = re.sub(r'\b(?:\d[ -]*?){13,16}\b', '[REDACTED_CARD_NO]', sanitized)
     # Scrub Aadhaar / Government IDs (12-digit numbers)
@@ -477,5 +519,124 @@ def update_human_help_status(
         conn.commit()
     logger.info(f"Updated request {ref_id} status to {clean_status}: {updated}")
     return updated
+
+
+# -----------------------------------------------------------------------------
+# Day 8: Call Analytics & Performance Dashboard
+# -----------------------------------------------------------------------------
+
+
+def log_call_analytics(
+    call_id: str,
+    caller_name: str = "Learner",
+    channel: str = "BROWSER",
+    status: str = "SUCCESS",
+    failure_category: Optional[str] = None,
+    tools_used: Optional[list[str]] = None,
+    duration_seconds: int = 45,
+    notes: str = "",
+    db_path: str = DB_PATH,
+) -> Dict[str, Any]:
+    """Record call outcome (SUCCESS or FAILED) and metrics in SQLite database."""
+    clean_call_id = call_id.strip()
+    clean_name = (caller_name or "Learner").strip()
+    clean_channel = (channel or "BROWSER").strip().upper()
+    clean_status = (status or "SUCCESS").strip().upper()
+    if clean_status not in ("SUCCESS", "FAILED"):
+        clean_status = "SUCCESS"
+
+    if clean_status == "SUCCESS":
+        fail_cat = "NONE"
+    else:
+        fail_cat = (failure_category or "INCOMPLETE_TASK").strip().upper()
+
+    tools_json = json.dumps(tools_used or [], ensure_ascii=False)
+    timestamp = datetime.now().isoformat()
+    scrubbed_notes = sanitize_summary(notes)
+
+    with get_connection(db_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO call_analytics (
+                call_id, caller_name, channel, status, failure_category,
+                tools_used, duration_seconds, timestamp, notes
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(call_id) DO UPDATE SET
+                status = excluded.status,
+                failure_category = excluded.failure_category,
+                tools_used = excluded.tools_used,
+                duration_seconds = excluded.duration_seconds,
+                notes = excluded.notes
+            """,
+            (
+                clean_call_id, clean_name, clean_channel, clean_status, fail_cat,
+                tools_json, duration_seconds, timestamp, scrubbed_notes,
+            ),
+        )
+        conn.commit()
+
+    logger.info(f"Logged call analytics {clean_call_id}: status={clean_status}, channel={clean_channel}")
+    return {
+        "call_id": clean_call_id,
+        "caller_name": clean_name,
+        "channel": clean_channel,
+        "status": clean_status,
+        "failure_category": fail_cat,
+        "tools_used": tools_used or [],
+        "duration_seconds": duration_seconds,
+        "timestamp": timestamp,
+        "notes": scrubbed_notes,
+    }
+
+
+def get_analytics_summary(db_path: str = DB_PATH) -> Dict[str, Any]:
+    """Compute call analytics totals (Total Calls, Successful Calls, Failed Calls, Success Rate, Failure Categories)."""
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM call_analytics")
+        total_calls = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM call_analytics WHERE status = 'SUCCESS'")
+        successful_calls = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM call_analytics WHERE status = 'FAILED'")
+        failed_calls = cursor.fetchone()[0]
+
+        cursor.execute(
+            "SELECT failure_category, COUNT(*) as cnt FROM call_analytics WHERE status = 'FAILED' GROUP BY failure_category"
+        )
+        failure_rows = cursor.fetchall()
+        failure_categories = {row["failure_category"]: row["cnt"] for row in failure_rows}
+
+    success_rate = round((successful_calls / total_calls * 100), 1) if total_calls > 0 else 0.0
+
+    return {
+        "total_calls": total_calls,
+        "successful_calls": successful_calls,
+        "failed_calls": failed_calls,
+        "success_rate_percent": success_rate,
+        "failure_categories": failure_categories,
+    }
+
+
+def get_call_analytics_history(limit: int = 50, db_path: str = DB_PATH) -> list[Dict[str, Any]]:
+    """Retrieve history of recent call records with PII scrubbing."""
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM call_analytics ORDER BY timestamp DESC LIMIT ?", (limit,))
+        rows = cursor.fetchall()
+        history = []
+        for r in rows:
+            data = dict(r)
+            try:
+                data["tools_used"] = json.loads(data.get("tools_used") or "[]")
+            except Exception:
+                data["tools_used"] = []
+            data["notes"] = sanitize_summary(data.get("notes", ""))
+            history.append(data)
+        return history
+
 
 
