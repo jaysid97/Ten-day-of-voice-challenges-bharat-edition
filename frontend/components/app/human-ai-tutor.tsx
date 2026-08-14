@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useAgent } from '@livekit/components-react';
 import { cn } from '@/lib/shadcn/utils';
 
 interface HumanAITutorProps {
@@ -10,6 +11,11 @@ interface HumanAITutorProps {
 }
 
 export function HumanAITutor({ state = 'ready', size = 'md', className }: HumanAITutorProps) {
+  const { agent } = useAgent();
+  const attributes = agent?.attributes || {};
+  const activeAgentKey = attributes['active_agent'] || 'MainTutor';
+  const isMathSpecialist = activeAgentKey === 'MathsPracticeSpecialist';
+
   const isSpeaking = state === 'speaking';
   const isListening = state === 'listening';
   const isThinking = state === 'thinking';
@@ -24,18 +30,21 @@ export function HumanAITutor({ state = 'ready', size = 'md', className }: HumanA
           size === 'sm' && 'size-32',
           size === 'md' && 'size-44',
           size === 'lg' && 'size-52',
-          isSpeaking && 'bg-gradient-to-tr from-amber-500/40 via-orange-500/30 to-yellow-400/40 animate-pulse',
-          isListening && 'bg-gradient-to-tr from-emerald-500/40 via-teal-500/30 to-sky-400/40 animate-pulse',
-          isThinking && 'bg-gradient-to-tr from-purple-500/40 via-indigo-500/30 to-sky-400/40 animate-pulse',
-          isConnecting && 'bg-gradient-to-tr from-sky-500/40 via-blue-500/30 to-indigo-400/40 animate-spin',
-          (state === 'ready' || state === 'ended') && 'bg-gradient-to-tr from-amber-500/25 via-sky-500/20 to-emerald-500/25'
+          isMathSpecialist
+            ? 'bg-gradient-to-tr from-emerald-500/50 via-teal-500/40 to-amber-400/50 animate-pulse'
+            : isSpeaking && 'bg-gradient-to-tr from-amber-500/40 via-orange-500/30 to-yellow-400/40 animate-pulse',
+          !isMathSpecialist && isListening && 'bg-gradient-to-tr from-emerald-500/40 via-teal-500/30 to-sky-400/40 animate-pulse',
+          !isMathSpecialist && isThinking && 'bg-gradient-to-tr from-purple-500/40 via-indigo-500/30 to-sky-400/40 animate-pulse',
+          !isMathSpecialist && isConnecting && 'bg-gradient-to-tr from-sky-500/40 via-blue-500/30 to-indigo-400/40 animate-spin',
+          (state === 'ready' || state === 'ended') && !isMathSpecialist && 'bg-gradient-to-tr from-amber-500/25 via-sky-500/20 to-emerald-500/25'
         )}
       />
 
       {/* Rotating Smart Classroom Chakra Halo Ring */}
       <div
         className={cn(
-          'absolute rounded-full border border-amber-400/30 border-t-amber-400 border-r-sky-400 chakra-icon opacity-80 pointer-events-none',
+          'absolute rounded-full border transition-all duration-500 chakra-icon opacity-80 pointer-events-none',
+          isMathSpecialist ? 'border-emerald-400/50 border-t-emerald-400 border-r-amber-400' : 'border-amber-400/30 border-t-amber-400 border-r-sky-400',
           size === 'sm' && 'size-28',
           size === 'md' && 'size-36',
           size === 'lg' && 'size-40'
@@ -43,17 +52,31 @@ export function HumanAITutor({ state = 'ready', size = 'md', className }: HumanA
       />
 
       {/* Floating Academic Symbols Around Avatar */}
-      <div className="absolute -top-2 -left-4 font-serif text-sm sm:text-base font-bold text-amber-300/50 float-symbol-1 pointer-events-none">
-        📖
+      <div className="absolute -top-2 -left-4 font-mono text-sm sm:text-base font-extrabold text-amber-300/70 float-symbol-1 pointer-events-none">
+        {isMathSpecialist ? '√x' : '📖'}
       </div>
-      <div className="absolute -bottom-1 -right-4 font-mono text-xs sm:text-sm font-bold text-sky-300/50 float-symbol-2 pointer-events-none">
-        ∑(x)
+      <div className="absolute -bottom-1 -right-4 font-mono text-xs sm:text-sm font-extrabold text-emerald-300/80 float-symbol-2 pointer-events-none">
+        {isMathSpecialist ? 'ax²+bx+c' : '∑(x)'}
       </div>
-      <div className="absolute -top-2 -right-4 font-serif text-sm sm:text-base font-bold text-emerald-300/50 float-symbol-3 pointer-events-none">
-        ✏️
+      <div className="absolute -top-2 -right-4 font-mono text-sm sm:text-base font-extrabold text-sky-300/70 float-symbol-3 pointer-events-none">
+        {isMathSpecialist ? 'π' : '✏️'}
       </div>
-      <div className="absolute -bottom-1 -left-4 font-mono text-xs sm:text-sm font-bold text-amber-300/50 float-symbol-4 pointer-events-none">
-        A B C
+      <div className="absolute -bottom-1 -left-4 font-mono text-xs sm:text-sm font-extrabold text-amber-300/70 float-symbol-4 pointer-events-none">
+        {isMathSpecialist ? 'x = -b±√D/2a' : 'A B C'}
+      </div>
+
+      {/* Active Agent Mode Badge below avatar */}
+      <div className="absolute -bottom-4 z-20">
+        <span
+          className={cn(
+            'inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 font-mono text-[10px] font-black uppercase tracking-wider shadow-lg backdrop-blur-md transition-all duration-500',
+            isMathSpecialist
+              ? 'border border-emerald-400/60 bg-emerald-950/90 text-emerald-300 ring-2 ring-emerald-500/30 animate-pulse'
+              : 'border border-amber-500/40 bg-slate-900/90 text-amber-300'
+          )}
+        >
+          <span>{isMathSpecialist ? '🧮 MATHS SPECIALIST' : '📚 SHIKSHA AI MAIN TUTOR'}</span>
+        </span>
       </div>
 
       {/* Human AI Tutor Avatar Card Frame */}

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAgent, useSessionContext } from '@livekit/components-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/shadcn/utils';
 
 interface AgentStateHeaderProps {
@@ -20,8 +21,30 @@ export function AgentStateHeader({
   micError,
   onShowMicError,
 }: AgentStateHeaderProps) {
-  const { state: agentState } = useAgent();
+  const { state: agentState, agent } = useAgent();
   const session = useSessionContext();
+
+  const attributes = agent?.attributes || {};
+  const activeAgentKey = attributes['active_agent'] || 'MainTutor';
+  const isMathSpecialist = activeAgentKey === 'MathsPracticeSpecialist';
+  const prevAgentKeyRef = useRef<string>(activeAgentKey);
+
+  useEffect(() => {
+    if (prevAgentKeyRef.current !== activeAgentKey) {
+      if (isMathSpecialist) {
+        toast.success('🔄 Handed off to Maths Practice Specialist (गणित विशेषज्ञ AI)!', {
+          description: 'Specialist agent active — solving step-by-step math problems.',
+          duration: 4000,
+        });
+      } else {
+        toast.info('🔄 Returned to Shiksha AI Main Tutor!', {
+          description: 'Main tutor active — ready for all subjects & languages.',
+          duration: 4000,
+        });
+      }
+      prevAgentKeyRef.current = activeAgentKey;
+    }
+  }, [activeAgentKey, isMathSpecialist]);
 
   const isConnecting =
     session.connectionState === 'connecting' ||
@@ -36,31 +59,47 @@ export function AgentStateHeader({
   return (
     <header className={cn('relative z-40 mx-auto w-full max-w-3xl px-4 pt-4', className)}>
       <div className="flex items-center justify-between gap-2.5 rounded-3xl border border-white/15 bg-slate-900/85 p-3.5 shadow-2xl backdrop-blur-2xl">
-        {/* Left: Identity Badge */}
+        {/* Left: Dynamic Active Agent Identity Badge */}
         <div className="flex items-center gap-3">
-          <div className="relative flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-sky-400 text-slate-950 font-bold shadow-lg shadow-amber-500/20">
-            <span className="text-lg">📚</span>
+          <div
+            className={cn(
+              'relative flex size-10 items-center justify-center rounded-2xl font-bold shadow-lg transition-all duration-500',
+              isMathSpecialist
+                ? 'bg-gradient-to-br from-emerald-500 via-teal-500 to-amber-400 text-slate-950 shadow-emerald-500/30 ring-2 ring-emerald-400/50'
+                : 'bg-gradient-to-br from-amber-500 via-orange-500 to-sky-400 text-slate-950 shadow-amber-500/20'
+            )}
+          >
+            <span className="text-lg">{isMathSpecialist ? '🧮' : '📚'}</span>
             <span className="absolute -bottom-1 -right-1 flex size-3">
               <span
                 className={cn(
                   'relative inline-flex size-3 rounded-full',
-                  isSpeaking && 'bg-amber-400 animate-ping',
-                  isListening && 'bg-emerald-400 animate-ping',
-                  isConnecting && 'bg-sky-400 animate-spin',
-                  isThinking && 'bg-purple-400 animate-pulse'
+                  isSpeaking && (isMathSpecialist ? 'bg-emerald-400 animate-ping' : 'bg-amber-400 animate-ping'),
+                  isListening && 'bg-sky-400 animate-ping',
+                  isConnecting && 'bg-purple-400 animate-spin',
+                  isThinking && 'bg-rose-400 animate-pulse'
                 )}
               />
             </span>
           </div>
           <div>
             <h2 className="flex items-center gap-2 text-sm font-black tracking-tight text-white sm:text-base">
-              <span>Shiksha AI</span>
-              <span className="rounded-md border border-rose-500/40 bg-rose-950/60 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-rose-300">
-                DAY 8 • CALL ANALYTICS &amp; HUMAN ESCALATIONS
+              <span>{isMathSpecialist ? 'Maths Specialist' : 'Shiksha AI'}</span>
+              <span
+                className={cn(
+                  'rounded-md px-2 py-0.5 font-mono text-[10px] font-extrabold shadow-sm transition-all duration-500',
+                  isMathSpecialist
+                    ? 'border border-emerald-400/50 bg-emerald-950/80 text-emerald-300 animate-pulse'
+                    : 'border border-amber-500/40 bg-amber-950/60 text-amber-300'
+                )}
+              >
+                {isMathSpecialist ? '🧮 SPECIALIST ACTIVE (गणित विशेषज्ञ)' : '📚 MAIN TUTOR ACTIVE'}
               </span>
             </h2>
             <p className="text-[11px] font-medium text-slate-400">
-              {language === 'hi' ? 'पर्सनल आउटबाउंड वॉइस ट्यूटर • Murf Falcon' : 'Outbound Voice Tutor • Murf Falcon'}
+              {isMathSpecialist
+                ? (language === 'hi' ? 'गणित विशेषज्ञ AI • Step-by-Step Math Solver' : 'Maths Practice Specialist • NCERT Math Solver')
+                : (language === 'hi' ? 'शिक्षा AI मुख्य ट्यूटर • Murf Falcon' : 'Shiksha AI Main Tutor • Murf Falcon')}
             </p>
           </div>
         </div>

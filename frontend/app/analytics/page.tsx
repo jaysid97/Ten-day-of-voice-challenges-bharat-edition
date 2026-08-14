@@ -105,7 +105,7 @@ export default function AnalyticsDashboardPage() {
                 ← Return to Voice Tutor
               </Link>
               <span className="rounded-md border border-rose-500/40 bg-rose-950/60 px-2 py-0.5 font-mono text-xs font-extrabold text-rose-300">
-                DAY 8 • CALL ANALYTICS DASHBOARD
+                DAY 9 • CALL ANALYTICS DASHBOARD
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white mt-2 flex items-center gap-3">

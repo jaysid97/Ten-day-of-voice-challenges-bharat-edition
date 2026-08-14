@@ -52,8 +52,8 @@ export function AgentChatTranscript({
             <span className="rounded-md bg-amber-500/15 border border-amber-400/30 px-2 py-0.5 text-amber-200">
               📞 Outbound Practice Call
             </span>
-            <span className="rounded-md bg-emerald-500/15 border border-emerald-400/30 px-2 py-0.5 text-emerald-200">
-              🗣️ 2-Sentence Opening Script
+            <span className="rounded-md bg-emerald-500/20 border border-emerald-400/50 px-2 py-0.5 text-emerald-300 font-bold animate-pulse">
+              🧮 Day 9 Maths Specialist Handoff
             </span>
             <span className="rounded-md bg-rose-500/15 border border-rose-400/30 px-2 py-0.5 text-rose-200">
               🛑 Opt-Out Supported
@@ -86,6 +86,16 @@ export function AgentChatTranscript({
               const isUser = from?.isLocal;
               const time = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+              // Check if message mentions math solution or specialist transfer
+              const isMathSpecialistMessage =
+                !isUser &&
+                (message.includes('Maths Practice Specialist') ||
+                  message.includes('गणित विशेषज्ञ') ||
+                  message.includes('MATH SPECIALIST') ||
+                  message.includes('x =') ||
+                  message.includes('quadratic') ||
+                  message.includes('Factoring middle term'));
+
               return (
                 <div
                   key={id}
@@ -101,9 +111,14 @@ export function AgentChatTranscript({
                         <span>👤 LEARNER (YOU)</span>
                         <span className="text-[9px] text-slate-500">{time}</span>
                       </span>
+                    ) : isMathSpecialistMessage ? (
+                      <span className="text-emerald-300 flex items-center gap-1 font-extrabold animate-pulse">
+                        <span>🧮 MATHS PRACTICE SPECIALIST (गणित विशेषज्ञ AI)</span>
+                        <span className="text-[9px] text-emerald-500">{time}</span>
+                      </span>
                     ) : (
                       <span className="text-amber-300 flex items-center gap-1">
-                        <span>🎓 SHIKSHA AI (MULTI-SUBJECT TUTOR)</span>
+                        <span>🎓 SHIKSHA AI (MAIN TUTOR)</span>
                         <span className="text-[9px] text-slate-500">{time}</span>
                       </span>
                     )}
@@ -115,6 +130,8 @@ export function AgentChatTranscript({
                       'max-w-[88%] rounded-2xl p-3.5 text-sm font-medium leading-relaxed shadow-lg backdrop-blur-md transition-all',
                       isUser
                         ? 'rounded-tr-xs border border-sky-400/40 bg-gradient-to-r from-sky-950/90 via-blue-950/90 to-indigo-950/90 text-sky-100 shadow-sky-500/10 font-sans'
+                        : isMathSpecialistMessage
+                        ? 'rounded-tl-xs border border-emerald-400/60 bg-gradient-to-r from-emerald-950/95 via-teal-950/95 to-slate-950/95 text-emerald-100 shadow-emerald-500/20 font-sans ring-1 ring-emerald-500/30'
                         : 'rounded-tl-xs border border-amber-400/40 bg-gradient-to-r from-amber-950/90 via-orange-950/90 to-slate-950/90 text-amber-100 shadow-amber-500/10 font-sans'
                     )}
                   >

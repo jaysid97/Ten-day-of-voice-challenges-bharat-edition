@@ -16,7 +16,7 @@ export const WelcomeView = ({
   hasEndedCall = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  const [activeTab, setActiveTab] = useState<'day7escalation' | 'day6outbound' | 'day5tools' | 'overview' | 'states' | 'guardrails'>('day7escalation');
+  const [activeTab, setActiveTab] = useState<'day9handoff' | 'day7escalation' | 'day6outbound' | 'day5tools' | 'overview' | 'states' | 'guardrails'>('day9handoff');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
   const [escalationRequests, setEscalationRequests] = useState<any[]>([]);
@@ -253,7 +253,7 @@ export const WelcomeView = ({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
             </span>
-            <span>📊 DAY 8 • REAL-TIME CALL ANALYTICS DASHBOARD &amp; HUMAN HELP</span>
+            <span>📊 DAY 9 • SPECIALIST AGENT HANDOFF &amp; REAL-TIME ANALYTICS</span>
           </div>
 
           <button
@@ -292,35 +292,45 @@ export const WelcomeView = ({
           </span>
         </h1>
 
-        {/* Day 7 Ready Badge */}
-        <div className="mb-2 inline-flex items-center space-x-1.5 rounded-full border border-rose-500/40 bg-rose-950/70 px-3 py-0.5 text-[11px] font-extrabold text-rose-300 shadow-md">
-          <span className="size-2 rounded-full bg-rose-400 animate-pulse" />
+        {/* Day 9 Ready Badge */}
+        <div className="mb-2 inline-flex items-center space-x-1.5 rounded-full border border-emerald-500/50 bg-emerald-950/80 px-3 py-0.5 text-[11px] font-extrabold text-emerald-300 shadow-lg animate-pulse">
+          <span className="size-2 rounded-full bg-emerald-400 animate-ping" />
           <span>
             {lang === 'hi'
-              ? '🚨 डे 7: ह्यूमन-इन-द-लूप एस्केलेशन, अनुमति सत्यापन एवं लाइव डैशबोर्ड सक्रिय'
-              : '🚨 Day 7: Know When to Ask for Human Help, Explicit Consent & Live Escalation Desk'}
+              ? '🧮 डे 9: गणित विशेषज्ञ AI हैंडऑफ, लाइव एजेंट स्विच एवं मेमोरी रिटेंशन सक्रिय'
+              : '🧮 Day 9: Specialist Agent Handoff (Maths Specialist), Memory Preloading & Live Switch Desk'}
           </span>
         </div>
 
         <p className="mb-1.5 max-w-xl text-base font-medium leading-snug text-amber-200/90 sm:text-xl">
           {lang === 'hi'
-            ? 'शिक्षा AI — मानव शिक्षक सहायता एवं एस्केलेशन केंद्र (Learning Track)'
-            : 'Human Teacher Escalation & Human-in-the-Loop Support System'}
+            ? 'शिक्षा AI — गणित विशेषज्ञ AI हैंडऑफ एवं मेमोरी रिटेंशन (Learning & Literacy Track)'
+            : 'Multi-Agent Handoff Architecture & Memory Retention System'}
         </p>
 
         <p className="mb-4 max-w-lg text-xs font-normal leading-relaxed text-slate-300 sm:text-sm">
           {lang === 'hi'
-            ? 'शिक्षा AI अब पहचानती है कि कब मानव शिक्षक की मदद चाहिए। अनुमति लेकर सपोर्ट टिकट बनाती है और लाइव डैशबोर्ड पर स्थिति प्रदर्शित करती है।'
-            : 'Shiksha AI knows when to ask for human help. Asks explicit caller permission before sharing details, scrubs PII, and posts to DB & Discord Webhook with live status updates.'}
+            ? 'सामान्य विषयों के लिए Shiksha AI तथा गणित के प्रश्नों के लिए Maths Practice Specialist (गणित विशेषज्ञ AI)। डेटाबेस से शिक्षार्थी मेमोरी स्वतः लोड होती है।'
+            : 'Shiksha AI handles general topics & caller memory; hands off math practice to MathsPracticeSpecialist (गणित विशेषज्ञ AI). Context & caller facts are retained seamlessly across agent transitions.'}
         </p>
 
         {/* Tab Navigation Controls */}
         <div className="mb-3 flex flex-wrap items-center justify-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 text-xs font-semibold backdrop-blur-md">
           <button
+            onClick={() => setActiveTab('day9handoff')}
+            className={`rounded-lg px-3 py-1.5 transition-all ${
+              activeTab === 'day9handoff'
+                ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 font-bold text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            🧮 Day 9 Agent Handoff
+          </button>
+          <button
             onClick={() => setActiveTab('day7escalation')}
             className={`rounded-lg px-3 py-1.5 transition-all ${
               activeTab === 'day7escalation'
-                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-orange-500 font-bold text-slate-950 shadow-md'
+                ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 font-bold text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -357,6 +367,93 @@ export const WelcomeView = ({
             🌟 Overview
           </button>
         </div>
+
+        {/* TAB: DAY 9 SPECIALIST AGENT HANDOFF */}
+        {activeTab === 'day9handoff' && (
+          <div className="mb-4 w-full space-y-3 text-left max-h-[340px] overflow-y-auto pr-1">
+            {/* Header Hero Card */}
+            <div className="rounded-xl border border-amber-500/40 bg-gradient-to-r from-slate-900/95 via-amber-950/40 to-slate-900/95 p-3 shadow-lg backdrop-blur-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl">🧮</span>
+                  <div>
+                    <h3 className="font-mono text-xs font-black text-amber-300">
+                      SPECIALIST AGENT HANDOFF ENGINE (MATHS SPECIALIST)
+                    </h3>
+                    <p className="text-[11px] text-slate-300">
+                      Shiksha AI (Main Agent) seamlessly transfers math practice queries to Maths Practice Specialist (गणित विशेषज्ञ AI) with full conversation history.
+                    </p>
+                  </div>
+                </div>
+                <span className="rounded-full border border-amber-500/40 bg-amber-950/80 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-300">
+                  DAY 9 • LIVE HANDOFF ACTIVE
+                </span>
+              </div>
+            </div>
+
+            {/* Architecture Flow & Handoff Scenarios */}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="rounded-xl border border-sky-500/30 bg-slate-900/80 p-2.5 shadow-sm backdrop-blur-md">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="font-mono text-[10px] font-bold text-sky-300">Scenario 1: Main Agent Path</span>
+                  <span className="rounded bg-sky-950 px-1 py-0.5 font-mono text-[9px] text-sky-200">NO HANDOFF</span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-100">General Subject Query</h4>
+                <p className="mt-1 font-mono text-[10px] italic text-slate-300">"What was the Dandi Salt March in Indian history?"</p>
+                <p className="mt-1 text-[10px] leading-tight text-slate-400">
+                  Handled directly by Main Shiksha AI Tutor. No handoff triggered.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-amber-500/40 bg-slate-900/80 p-2.5 shadow-sm backdrop-blur-md">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="font-mono text-[10px] font-bold text-amber-300">Scenario 2: Specialist Handoff</span>
+                  <span className="rounded bg-amber-950 px-1 py-0.5 font-mono text-[9px] text-amber-200">HANDOFF TRIGGERED</span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-100">Math Practice Query</h4>
+                <p className="mt-1 font-mono text-[10px] italic text-slate-300">"Can you help me solve 2x^2 + 5x + 3 = 0?"</p>
+                <p className="mt-1 text-[10px] leading-tight text-slate-400">
+                  Main Agent announces transfer aloud, then invokes hand_off_to_math_specialist tool.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-emerald-500/30 bg-slate-900/80 p-2.5 shadow-sm backdrop-blur-md">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="font-mono text-[10px] font-bold text-emerald-300">Scenario 3: Handback to Main</span>
+                  <span className="rounded bg-emerald-950 px-1 py-0.5 font-mono text-[9px] text-emerald-200">HANDBACK TRIGGERED</span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-100">Topic Change / Return Request</h4>
+                <p className="mt-1 font-mono text-[10px] italic text-slate-300">"Thanks! Now explain Python loops."</p>
+                <p className="mt-1 text-[10px] leading-tight text-slate-400">
+                  Specialist Agent announces return aloud, then invokes hand_off_to_main_agent tool.
+                </p>
+              </div>
+            </div>
+
+            {/* Test Voice Prompts Box */}
+            <div className="rounded-xl border border-white/10 bg-slate-950/80 p-2.5 text-xs">
+              <div className="mb-1 font-mono text-[11px] font-bold text-amber-300">
+                🎙️ Sample Voice Test Prompts for Day 9:
+              </div>
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 text-[11px]">
+                <button
+                  onClick={() => copyToClipboard('Can you help me solve 2x^2 + 5x + 3 = 0?', 901)}
+                  className="flex items-center justify-between rounded bg-slate-900 p-1.5 text-left border border-white/5 hover:border-amber-500/40"
+                >
+                  <span className="font-mono text-slate-200">"Can you help me solve 2x^2 + 5x + 3 = 0?"</span>
+                  <span className="text-[10px] text-amber-300 font-bold ml-1">{copiedIndex === 901 ? 'Copied!' : 'Copy'}</span>
+                </button>
+                <button
+                  onClick={() => copyToClipboard('मेरा math का homework करवाओ, fractions solve करने हैं।', 902)}
+                  className="flex items-center justify-between rounded bg-slate-900 p-1.5 text-left border border-white/5 hover:border-amber-500/40"
+                >
+                  <span className="font-mono text-slate-200">"मेरा math का homework करवाओ, fractions solve करने हैं।"</span>
+                  <span className="text-[10px] text-amber-300 font-bold ml-1">{copiedIndex === 902 ? 'Copied!' : 'Copy'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* TAB: DAY 7 HUMAN ESCALATIONS */}
         {activeTab === 'day7escalation' && (
