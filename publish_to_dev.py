@@ -5,6 +5,11 @@ import urllib.request
 import urllib.parse
 import argparse
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
 def publish_to_dev(api_key: str, publish: bool = True):
     blog_file_path = os.path.join(os.path.dirname(__file__), "DAY10_BLOG_POST.md")
     
@@ -70,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument("--draft", action="store_true", help="Publish as draft instead of live article")
     args = parser.parse_args()
     
-    key = args.api-key or os.getenv("DEVTO_API_KEY")
+    key = args.api_key or os.getenv("DEVTO_API_KEY")
     if not key:
         print("❌ Error: No DEV.to API key provided.")
         print("Please provide key via --api-key argument or DEVTO_API_KEY environment variable.")
