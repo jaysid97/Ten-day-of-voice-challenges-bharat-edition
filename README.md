@@ -26,6 +26,7 @@ Welcome to the **10 Days of Voice AI Challenge (#VoiceForBharat)** repository fe
 | **Day 7** | Know When to Ask for Human Help | **Shiksha AI** | [DAY7_GUIDE.md](./DAY7_GUIDE.md): Human escalation tool (`create_escalation`), hard consent rule, PII scrubbing, SQLite & Discord Webhook tickets, live admin dashboard | ✅ Completed |
 | **Day 8** | Track Performance & Call Analytics | **Shiksha AI** | [DAY8_GUIDE.md](./DAY8_GUIDE.md): Call metrics, SQLite `call_analytics` schema, real-time `/analytics` dashboard, failure category breakdown & automated tests | ✅ Completed |
 | **Day 9** | Hand Off to a Specialist Agent | **MathsPracticeSpecialist** | [DAY9_GUIDE.md](./days/day9/DAY9_GUIDE.md): Multi-agent session handoff (`session.update_agent`), shared history context, bi-directional handback, universal step-by-step math solver tool | ✅ Completed |
+| **Day 10** | Share Your Voice Agent Journey | **Shiksha AI** | [DAY10_GUIDE.md](./days/day10/DAY10_GUIDE.md) & [DAY10_BLOG_POST.md](./DAY10_BLOG_POST.md): Published blog post, architecture breakdown, engineering challenges, quick start guide & LinkedIn share | ✅ Completed |
 
 ---
 
@@ -234,6 +235,18 @@ cd backend
 - **Zero Context Loss**: Preserves full `session.history` across agent transitions.
 - **Universal Math Solver Tool (`solve_math_step_by_step`)**: Step-by-step solver covering algebra, quadratic equations, linear equations, fractions, geometry, trigonometry, calculus, percentages, and arithmetic.
 - **Real-Time HUD Sync**: Participant attributes broadcast (`active_agent`) triggers dynamic badges, toast alerts, floating math symbols (`√x`, `ax²+bx+c`, `π`), and emerald speech bubbles.
+
+---
+
+## ✍️ Day 10 Highlight: Share Your Voice Agent Journey
+- **Blog Article**: Complete, ready-to-publish post available in [`DAY10_BLOG_POST.md`](./DAY10_BLOG_POST.md).
+- **Challenge Guide**: Complete Day 10 documentation available in [`DAY10_GUIDE.md`](./days/day10/DAY10_GUIDE.md).
+- **Key Coverage**:
+  - **The Vision**: Problem statement for Indian learners (tuition cost, language barrier, shaming fear, friction of text interfaces).
+  - **Feature Highlights**: Murf Falcon 55ms streaming TTS, guardrails, 5 UI states, persistent SQLite memory & consent, domain APIs, outbound SIP calls, human escalation with PII scrubbing, `/analytics` dashboard, and multi-agent handoffs.
+  - **Engineering Lessons**: Code-mixed speech latency tuning, multi-agent context retention (`session.history`), and voice PII scrubbing & explicit consent enforcement.
+  - **Builder's Guide**: Architectural breakdown, `.env.local` security, 2-minute quickstart guide, public repository link, and production code snippets.
+  - **LinkedIn Post**: Published share post with `#VoiceForBharat` and `@Murf AI` handle tagging.
 
 ---
 
