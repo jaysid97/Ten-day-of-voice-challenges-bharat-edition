@@ -124,7 +124,7 @@ What started as a simple real-time voice pipeline evolved into an enterprise-gra
 The highlight of this journey was building with Murf Falcon TTS — hands down the fastest, most natural-sounding Text-to-Speech API for Indian accents and multilingual speech!
 
 📖 Read my complete step-by-step guide & architecture breakdown:
-[INSERT YOUR BLOG POST URL HERE]
+https://dev.to/jaysid97/how-i-built-a-real-time-multilingual-ai-voice-tutor-for-bharat-and-solved-the-55ms-latency-problem-1epc
 
 💻 Inspect the open-source code on GitHub:
 https://github.com/jaysid97/Ten-day-of-voice-challenges-bharat-edition
